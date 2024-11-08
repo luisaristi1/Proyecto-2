@@ -1,0 +1,14 @@
+{"usuarios": [
+  {
+    "password": "password123",
+    "correo": "gomez@example.com",
+    "tipoUsuario": "Profesor",
+    "nombre": "Gomez"
+  },
+  {
+    "password": "pass456",
+    "correo": "luis@example.com",
+    "tipoUsuario": "Estudiante",
+    "nombre": "Luis"
+  }
+]}
