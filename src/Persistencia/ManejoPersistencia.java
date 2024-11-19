@@ -244,119 +244,52 @@ public class ManejoPersistencia {
 		}
 	
 	//Se lee el archivo y se crea el mapa de actividades
-	public Map<String, Actividad> crearMapaActividades(){
-		String nombreCSV = "data/datosActividades.csv";
-		
-		long milisegundos = 1636627200000L; //para inicializar date
-	       Date fecha = new Date(milisegundos);
-	       
-		try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
-            String line;
-            
-            if ((line = br.readLine()) == null) {
-            	System.out.println("No existen actividades. Debe primero crear una.");
-            	
-            	Scanner scanner = new Scanner(System.in);
-            	System.out.print("Introduce la fecha (dd/MM/yyyy): ");
-                String fechaStr = scanner.nextLine();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-			    Date fechaIn = new Date(milisegundos);
-				try {
-					fechaIn = dateFormat.parse(fechaStr);
-				} catch (ParseException e) {
-					
-					e.printStackTrace();
-				}
 
-                // Leer booleano
-                System.out.print("Es obligatorio (true/false): ");
-                Boolean obligatorioIn = scanner.nextBoolean();
-                scanner.nextLine(); // Consumir el salto de línea pendiente
+	    public Map<String, Actividad> crearMapaActividades(Profesor profesor) {
+	        String nombreCSV = "data/datosActividades.csv";
+	        Scanner scanner = new Scanner(System.in);
 
-                // Leer nombre
-                System.out.print("Introduce el nombre: ");
-                String nombreIn = scanner.nextLine();
+	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	            String line;
 
-                // Leer descripción
-                System.out.print("Introduce la descripción: ");
-                String descripcionIn = scanner.nextLine();
+	            if ((line = br.readLine()) == null) {
+	                System.out.println("No existen actividades. Debe primero crear una.");
 
-                // Leer objetivo
-                System.out.print("Introduce el objetivo: ");
-                String objetivoIn = scanner.nextLine();
+	                boolean agregarMasActividades = true;
+	                while (agregarMasActividades) {
+	                    // Usar el método crearActividad del profesor
+	                    Actividad nuevaActividad = profesor.crearActividad(scanner);
+	                    if (nuevaActividad != null) {
+	                        crearActividadData(nuevaActividad);
+	                        System.out.println("Actividad añadida al mapa.");
+	                    }
 
-                // Leer nivel de dificultad
-                System.out.print("Introduce el nivel de dificultad: ");
-                String nivelDificultadIn = scanner.nextLine();
+	                    System.out.print("¿Desea agregar otra actividad? (si/no): ");
+	                    String continuar = scanner.nextLine().toLowerCase();
+	                    if (!continuar.equals("si")) {
+	                        agregarMasActividades = false;
+	                    }
+	                }
+	            } else {
+	                // Leer actividades del archivo CSV
+	                while ((line = br.readLine()) != null) {
+	                    String[] values = line.split(";");
+	                    Scanner csvScanner = new Scanner(String.join("\n", values));
 
-                // Leer duración esperada
-                System.out.print("Introduce la duración esperada (en horas): ");
-                int duracionEsperadaIn = scanner.nextInt();
-                scanner.nextLine(); // Consumir el salto de línea pendiente
+	                    // Delegar la creación de la actividad al profesor
+	                    Actividad actividad = profesor.crearActividad(csvScanner);
+	                    if (actividad != null) {
+	                        crearActividadData(actividad);
+	                    }
+	                }
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
 
-                // Leer creador
-                System.out.print("Introduce el nombre de usuario del creador: ");
-                String creadorIn = scanner.nextLine();
-            	
-                scanner.close();
-                
-            	crearActividadData(fechaIn,obligatorioIn , nombreIn,  descripcionIn, objetivoIn, nivelDificultadIn, duracionEsperadaIn, creadorIn);
-            }
-            
-            else {
-            
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(";");
-                
-                String nombre = values[0];
-                String descripcion = values[1];
-                String objetivo = values[2];
-                String nivel = values[3];
-                int duracion = Integer.parseInt(values[4]);
-                
-                
-                SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
-                String f = values[5];
-                
-                try {
-     			fecha = formato.parse(f);
-     		} catch (ParseException e) {
-     			e.printStackTrace();
-     		}
-                
-                Boolean obligatorio = Boolean.parseBoolean(values[6]);
-                int resultado = Integer.parseInt(values[7]);
-                float rating = Float.parseFloat(values[8]);
-                float suma = Float.parseFloat(values[9]);
-                String creador = values[10];
-                
-                ArrayList<String> prerequisitos = new ArrayList<>();
-                
-                String[] p = values[11].split(",");
-                
-                for (String s: p) {
-                	prerequisitos.add(s);
-                }
-                
-                Actividad actividad = new Actividad(fecha, obligatorio, nombre, descripcion, objetivo, nivel, duracion, creador);
-                
-         	    actividad.setResultado(resultado);
-         	    actividad.setRating(rating);
-         	    actividad.setSumaRating(suma);
-         	    actividad.setPrerequisitos(prerequisitos);
-                
-         	    mapaActividades.put(actividad.getNombre(), actividad);
-                
-            }
-		}
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-		
-		System.out.println("Las actividades se han cargado exitosamente.");
-		
-		return mapaActividades;
-	}
+	        System.out.println("Las actividades se han cargado exitosamente.");
+	        return mapaActividades;
+	    }
 		
 	//FIN SECCION PARA ACTIVIDADES
 		
