@@ -12,10 +12,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 
+
+
+import proyecto.Actividad;
+import proyecto.LearningPath;
+import proyecto.Profesor;
+import proyecto.Estudiante;
 
 
 import proyecto.Actividad;
@@ -24,14 +31,12 @@ import proyecto.LearningPath;
 import proyecto.Profesor;
 import proyecto.Quiz;
 import proyecto.RecursoEducativo;
+import proyecto.Reseña;
 import proyecto.Tarea;
 import proyecto.Usuario;
 import proyecto.Estudiante;
 
-
-
 public class ManejoPersistencia {
-	
 	private Map<String, LearningPath> mapaPaths = new HashMap<>();
 	private Map<String, Actividad> mapaActividades = new HashMap<>();
 	private Map<String, Usuario> mapaUsuarios = new HashMap<>();
@@ -41,45 +46,12 @@ public class ManejoPersistencia {
 	
 	//Resolver parametro creador desde controlador
 	//Método para crear Actividad
-	public Map<String, Actividad> crearActividadData(
-	        LearningPath lp, Date fecha, Boolean obligatorio, String nombre, 
-	        String descripcion, String objetivo, String nivelDificultad, 
-	        int duracionEsperada, Profesor creador, String tipoactividad) {
-	    
-	    Actividad nuevaActividad = null; // Declaro una variable de tipo Actividad
-
-	    switch (tipoactividad.toLowerCase()) {
-	        case "quiz":
-	            nuevaActividad = new Quiz(nombre, lp, descripcion, objetivo, nivelDificultad, 
-	                                      duracionEsperada, obligatorio, duracionEsperada, creador);
-	            break;
-	        case "tarea":
-	            nuevaActividad = new Tarea(lp, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, 
-	                                       obligatorio, creador);
-	            break;
-	        case "recursoeducativo":
-	            nuevaActividad = new RecursoEducativo(lp, nombre, descripcion, objetivo, 
-	                                                  duracionEsperada, obligatorio, fecha, 
-	                                                  nivelDificultad, creador);
-	            break;
-	        case "encuesta":
-	            nuevaActividad = new Encuesta(lp, nombre, descripcion, objetivo, duracionEsperada, 
-	                                          obligatorio, fecha);
-	            break;
-	        default:
-	            System.out.println("Tipo de actividad no reconocido.");
-	            return null; // Sale de la función si el tipo no es válido
-	    }
-
-	    // Asumiendo que mapaActividades ya está definido en la clase como un Map
-	    mapaActividades.put(nuevaActividad.getNombre(), nuevaActividad);
-
-	    // Llama al método de guardado
-	    guardarActividades();
-
-	    return mapaActividades;
-	}
-
+	   public Map<String, Actividad> crearActividadData(Actividad actividad) {
+		   mapaActividades.put(actividad.getNombre(), actividad);
+		   guardarActividades();
+		   return mapaActividades;
+	   }
+	   
 	   //Buscar una actividad
 	   public Actividad buscarActividad(String nombre) {
 		   return mapaActividades.get(nombre);
@@ -87,54 +59,88 @@ public class ManejoPersistencia {
 	   
 	//Modificar actividad
 	   
-	   public Map<String, Actividad> modificarActividad(int parametro, String modificar, String actividad){
-		   Actividad a = mapaActividades.get(actividad);  
+	   public Map<String, Actividad> modificarActividad(int parametro, String modificar, String nombreActividad){
+		   Actividad act = mapaActividades.get(nombreActividad);  
 		   
 		   if (parametro == 1) {
-			   a.setNombre(modificar);
+			   act.setNombre(modificar);
 		   }
 		   
 		   else if(parametro == 2) {
-			   a.setDescripcion(modificar);
+			   act.setDescripcion(modificar);
 		   }
 		   
 		   else if(parametro == 3) {
-			   a.setObjetivo(modificar);
+			   act.setObjetivo(modificar);
 		   }
 		   
 		   else if(parametro == 4) {
-			   a.setNivelDificultad(modificar);
+			   act.setNivelDificultad(modificar);
 		   }
 		   
 		   else if(parametro == 5) {
 			   int m = Integer.parseInt(modificar);
-			   a.setDuracionEsperada(m);
+			   act.setDuracionEsperada(m);
 		   }
 		   
 		   else if(parametro == 6) {
-			   ArrayList<String> prerequisitos = a.getPrerequisitos();
-			   
-			   String[] p = modificar.split(",");
-			   
-			   System.out.println("Ingrese 1 para agregar los prerrequisitos ingresados, o 2 para eliminarlos.");
-			   
-			   Scanner scanner = new Scanner(System.in);
-		       int numero = scanner.nextInt();
-		       scanner.close();
-			   
-			   if (numero == 1) {
-				   for (String pre: p) {
-					   prerequisitos.add(pre);
+			   if (act.getPrerrequisitosNombres().equals(null)) {
+				   ArrayList<Actividad> prerequisitos = (ArrayList<Actividad>) act.getPrerrequisitos();
+				   ArrayList<String> prerequisitosString = new ArrayList<>();
+				   
+				   for (Actividad prerequisito: prerequisitos) {
+					   String pre = prerequisito.getNombre();
+					   prerequisitosString.add(pre);
 				   }
-			   }
-			   
-			   else if (numero == 2) {
-				   for (String pre: p) {
-					   prerequisitos.remove(pre);
+				   
+				   
+				   
+				   String[] p = modificar.split(",");
+				   
+				   System.out.println("Ingrese 1 para agregar los prerrequisitos ingresados, o 2 para eliminarlos.");
+				   
+				   Scanner scanner = new Scanner(System.in);
+			       int numero = scanner.nextInt();
+			       scanner.close();
+				   
+				   if (numero == 1) {
+					   for (String pre: p) {
+						   prerequisitosString.add(pre);
+					   }
 				   }
+				   
+				   else if (numero == 2) {
+					   for (String pre: p){
+						   prerequisitosString.remove(pre);
+					   }
+				   }
+				   
+				   act.setPrerrequisitosNombre(prerequisitosString);
+				   
 			   }
-			   
-			   a.setPrerequisitos(prerequisitos);;
+			   else {
+				   ArrayList<String> prerrequisitos =(ArrayList<String>) act.getPrerrequisitosNombres();
+				   String[] p = modificar.split(",");
+				   
+				   System.out.println("Ingrese 1 para agregar los prerrequisitos ingresados, o 2 para eliminarlos.");
+				   
+				   Scanner scanner = new Scanner(System.in);
+			       int numero = scanner.nextInt();
+			       scanner.close();
+				   
+				   if (numero == 1) {
+					   for (String pre: p) {
+						   prerrequisitos.add(pre);
+					   }
+				   }
+				   
+				   else if (numero == 2) {
+					   for (String pre: p){
+						   prerrequisitos.remove(pre);
+					   }
+				   }
+				   
+			   }
 		   }
 		   
 		   else if(parametro == 7) {
@@ -149,18 +155,14 @@ public class ManejoPersistencia {
 	           } catch (ParseException e) {
 				e.printStackTrace();
 	           		}
-	           a.setFechaLimiteBasadaEnActividadAnterior(fecha);
+	           act.establecerFechaLimite(fecha);
 		   }
 		   
 		   else if(parametro == 8) {
 			   Boolean bol = Boolean.parseBoolean(modificar);
-			   a.setObligatorioOpcional(bol);
+			   act.setObligatorio(bol);
 		   }
-		   
-		   else if(parametro == 9) {
-			   int m = Integer.parseInt(modificar);
-			   a.setResultado(m);
-		   }
+
 		   
 		   guardarActividades();
 		   
@@ -189,52 +191,57 @@ public class ManejoPersistencia {
 		   return mapaActividades;
 	   }
 	
-	//formato en string de cada actividad
-	public ArrayList<String> formatoActividad(Actividad a){
-		   ArrayList<String> rta = new ArrayList<>();
-		   
-		   String nombre = a.getNombre();
-		   String descripcion = a.getDescripcion();
-		   String objetivo = a.getObjetivo();
-		   String nivel = a.getNivel();
-		   String duracion = String.valueOf(a.getDuracionEsperada());
-		   
-		   //Se transforma tipo Date en str
-		   SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
-	       String fecha = formato.format(a.getFechaLimite());
-		   
-	       String obligatorio = String.valueOf(a.isObligatorioOpcional());
-	       String resultado = String.valueOf(a.getResultado());
-	       String rating = String.valueOf(a.getRating());
-	       String sumaRating = String.valueOf(a.getSumaRating());
-	       String creador = a.getCreador();
-	       
-	       String prerequisitos = "";
-	       
-	       ArrayList<String> p = a.getPrerequisitos();
-	       for(String s: p) {
-	    	   if (prerequisitos.length() == 0) {
-	    		   prerequisitos = prerequisitos + s;
-	    	   } else {
-	    		   prerequisitos = prerequisitos + ", " + s;
-	    	   }
-	       }
-		   
-	       rta.add(nombre);
-	       rta.add(descripcion);
-	       rta.add(objetivo);
-	       rta.add(nivel);
-	       rta.add(duracion);
-	       rta.add(fecha);
-	       rta.add(obligatorio);
-	       rta.add(resultado);
-	       rta.add(rating);
-	       rta.add(sumaRating);
-	       rta.add(creador);
-	       rta.add(prerequisitos);
-	       
-	       return rta;
-	   }
+	   public ArrayList<String> formatoActividad(Actividad a) {
+		    ArrayList<String> rta = new ArrayList<>();
+
+		    // Información general de la actividad
+		    String nombre = a.getNombre();
+		    String descripcion = a.getDescripcion();
+		    String objetivo = a.getObjetivo();
+		    String nivel = a.getNivelDificultad();
+		    String duracion = String.valueOf(a.getDuracionEsperada());
+
+		    // Formatear fecha
+		    SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
+		    String fecha = formato.format(a.getFechaLimite());
+
+		    String obligatorio = String.valueOf(a.isObligatorio());
+		    String creador = a.getCreador().getNombre();
+
+		    // Prerrequisitos
+		    String prerequisitos = String.join(", ", a.getPrerrequisitosNombres());
+
+		    // Añadir información general al formato
+		    rta.add("Nombre: " + nombre);
+		    rta.add("Descripción: " + descripcion);
+		    rta.add("Objetivo: " + objetivo);
+		    rta.add("Nivel: " + nivel);
+		    rta.add("Duración: " + duracion);
+		    rta.add("Fecha límite: " + fecha);
+		    rta.add("Obligatorio: " + obligatorio);
+		    rta.add("Creador: " + creador);
+		    rta.add("Prerrequisitos: " + prerequisitos);
+
+		    // Respuestas de estudiantes
+		    rta.add("Respuestas de estudiantes:");
+		    Map<Estudiante, String> respuestas = a.getRespuesta();
+		    for (Map.Entry<Estudiante, String> entry : respuestas.entrySet()) {
+		        Estudiante estudiante = entry.getKey();
+		        String respuesta = entry.getValue();
+		        rta.add("Estudiante: " + estudiante.getNombre() + ", Respuesta: " + respuesta);
+		    }
+
+		    // Reseñas
+		    rta.add("Reseñas:");
+		    List<Reseña> reseñas = a.getReseñas();
+		    for (Reseña reseña : reseñas) {
+		        String rating = String.valueOf(reseña.getRating());
+		        String comentario = reseña.getTexto() != null && !reseña.getTexto().isEmpty() ? reseña.getTexto() : "\"\"";
+		        rta.add("Rating: " + rating + ", Comentario: " + comentario);
+		    }
+
+		    return rta;
+		}
 	
 	//Se lee el archivo y se crea el mapa de actividades
 	public Map<String, Actividad> crearMapaActividades(){

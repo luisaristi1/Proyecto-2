@@ -1,6 +1,8 @@
 package proyecto;
 
 import java.util.ArrayList;
+import Persistencia.ManejoPersistencia;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,7 @@ public class Profesor extends Usuario {
             System.out.println("- " + lp.getTitulo());
         }
 	}
+
 	
 	
 	@Override
@@ -121,6 +124,9 @@ public class Profesor extends Usuario {
                 System.out.println("Por favor, ingrese un número válido.");
             }
         }
+        System.out.print("Ingrese el nombre del recurso: ");
+        String nom = scanner.nextLine();
+        
         
         System.out.print("Ingrese la descripción del recurso: ");
         String des = scanner.nextLine();
@@ -155,7 +161,7 @@ public class Profesor extends Usuario {
         System.out.print("Ingrese el enlace del recurso: ");
         String enl = scanner.nextLine();
         
-        RecursoEducativo nuevo = new RecursoEducativo(path, des, obj, dif, duracionEsperada, obl, tipo, enl, this);
+        RecursoEducativo nuevo = new RecursoEducativo(path,nom, des, obj, dif, duracionEsperada, obl, tipo, enl, this);
         
         añadirActividadALearningPath(nuevo);
     	

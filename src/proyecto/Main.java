@@ -101,7 +101,7 @@ public class Main {
         System.out.println("\n2.2 Creación de Actividades para el Learning Path\n");
         
         //Creación de un examen para poder mostrar siempre la funcion de calificar actividades
-        Tarea tarea = new Tarea(lp, "Tarea: ejercicios de práctica", "Aprender tecnicas de resolución de problemas con programación", "Bajo", 60, true, p);
+        Tarea tarea = new Tarea(lp,"", "Tarea: ejercicios de práctica", "Aprender tecnicas de resolución de problemas con programación", "Bajo", 60, true, p);
         Actividad a1 = p.crearActividad(scanner);
         Actividad a2 = p.crearActividad(scanner);
         

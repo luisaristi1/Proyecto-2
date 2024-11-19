@@ -18,9 +18,10 @@ public abstract class Actividad implements Cloneable{
 	protected String nivelDificultad;
 	protected int duracionEsperada; //En minutos
 	protected Date fechaLimite;
-	protected boolean obligatorio;
+	protected Boolean obligatorio;
     protected List<Actividad> actividadesSeguimiento;
     protected List<Actividad> prerrequisitos;
+    protected List<String> nombrePrerrequisitos;
     protected Profesor creador;
     protected List<Reseña> reseñas;
     protected Map<Estudiante, String> respuesta;
@@ -36,6 +37,7 @@ public abstract class Actividad implements Cloneable{
 		this.nivelDificultad = nivelDificultad;
 		this.duracionEsperada = duracionEsperada;
 		this.fechaLimite = null;
+		this.nombrePrerrequisitos = null;
 		this.obligatorio = obligatorio;
 		this.actividadesSeguimiento = new ArrayList<Actividad>();
 		this.prerrequisitos = new ArrayList<Actividad>();
@@ -76,6 +78,10 @@ public abstract class Actividad implements Cloneable{
 	public boolean isObligatorio() {
 		return obligatorio;
 	}
+	public void setObligatorio(Boolean obligatorio) {
+		this.obligatorio = obligatorio;
+	}
+	
 	public List<Actividad> getPrerrequisitos() {
 		return prerrequisitos;
 	}
@@ -85,6 +91,24 @@ public abstract class Actividad implements Cloneable{
 	}
 	public Profesor getCreador() {
 		return creador;
+	}
+	
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
+	public void setObjetivo(String objetivo) {
+		this.objetivo = objetivo;
+	}
+	public void setNombre(String nuevoNombre) {
+		this.nombre = nuevoNombre;
+	}
+	
+	public void setNivelDificultad(String nivel) {
+		this.nivelDificultad = nivel;
+	}
+	
+	public void setDuracionEsperada(int duracion) {
+		this.duracionEsperada = duracion;
 	}
 	
 	public void setCreador(Profesor nuevo) {
@@ -99,7 +123,12 @@ public abstract class Actividad implements Cloneable{
 	public String getTipo() {
 		return tipo;
 	}
-
+	public List<String> getPrerrequisitosNombres(){
+		return nombrePrerrequisitos;
+	}
+	public void setPrerrequisitosNombre(List<String> prerrequisitosString) {
+		this.nombrePrerrequisitos = prerrequisitosString;
+	}
 	//Metodos
     public abstract void realizar(ProgresoActividad progreso);
     public abstract void editar(Profesor editor);

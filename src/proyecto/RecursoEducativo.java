@@ -11,9 +11,9 @@ public class RecursoEducativo extends Actividad{
 	private String enlaceRecurso;
 
 	//Cosntructor
-	public RecursoEducativo(LearningPath lp, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
+	public RecursoEducativo(LearningPath lp, String nombre, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
 			boolean obligatorio, String tipoRecurso, String enlaceRecurso, Profesor creador) {
-		super(lp, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
+		super(lp, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
         this.tipoRecurso = tipoRecurso;
         this.enlaceRecurso = enlaceRecurso;
 		// TODO Auto-generated constructor stub
