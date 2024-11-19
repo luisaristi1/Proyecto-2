@@ -52,6 +52,21 @@ public class Profesor extends Usuario {
 			reseña.hacerReseña(actividad);;
 	}
 	
+	public Boolean verificarActividadExistente(String nombreLp, Actividad actividad) {
+		Boolean rta = false;
+		for (LearningPath lp: learningPathsCreados) {
+			if (lp.getTitulo() == nombreLp) {
+				List<Actividad> actividades = lp.getActividades();
+				for (Actividad a: actividades) {
+					if (a.equals(actividad)) {
+						rta = true;
+					}
+				}
+			}
+		}
+		return rta;
+	}
+	
     public LearningPath crearLearningPath(String titulo, String descripcion, String objetivos, String nivelDificultad, int duracionEstimada, Registro sistema) {
     	
     	LearningPath nuevoLP = new LearningPath(titulo, descripcion, objetivos, nivelDificultad, this, duracionEstimada);

@@ -340,5 +340,15 @@ public class Estudiante extends Usuario {
     	}
     }
     
+    public Boolean verificarPathExistente(LearningPath lp) {
+    	Boolean rta = false; //por defecto se asume que no está
+		for (LearningPath path: learningPathsInscritos) {
+			if (path.equals(lp)) {
+				rta = true;
+			}
+		}
+		return rta;
+    }
+    
 
 }

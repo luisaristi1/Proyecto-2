@@ -43,6 +43,37 @@ public class Registro {
         usuarios.add(profesor);
     }
 	
+	//para restringir registro de email existente
+	public Boolean verificarEmailExistente(String email) {
+		Boolean rta = false; //por defecto se asume que no está
+		for (Usuario usuar: usuarios) {
+			if (usuar.getCorreo() == email) {
+				rta = true;
+			}
+		}
+		return rta;
+	}
+	
+	public Boolean verificarUsuarioExistente(Usuario usuario) {
+		Boolean rta = false; //por defecto se asume que no está
+		for (Usuario usuar: usuarios) {
+			if (usuar.equals(usuario)) {
+				rta = true;
+			}
+		}
+		return rta;
+	}
+	
+	public Boolean verificarPathExistente(LearningPath lp) {
+		Boolean rta = false; //por defecto se asume que no está
+		for (LearningPath path: paths) {
+			if (path.equals(lp)) {
+				rta = true;
+			}
+		}
+		return rta;
+	}
+	
 	public void registrarEstudiante(Estudiante estudiante) throws Exception {
         for (Usuario u : usuarios) {
             if (u instanceof Estudiante) {
