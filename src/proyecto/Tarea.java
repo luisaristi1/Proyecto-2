@@ -9,9 +9,9 @@ public class Tarea extends Actividad {
     private String medioEntrega;
 
     //Constructor
-	public Tarea(LearningPath lp, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
+	public Tarea(LearningPath lp,String nombre, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
 			boolean obligatorio, Profesor creador) {
-		super(lp, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
+		super(lp, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
 		// TODO Auto-generated constructor stub
 		this.medioEntrega = "";
 		this.tipo = "Tarea";

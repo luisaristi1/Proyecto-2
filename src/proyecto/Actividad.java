@@ -12,6 +12,7 @@ public abstract class Actividad implements Cloneable{
 	
 	//Atributos
 	protected LearningPath learningPath;
+	protected String nombre;
 	protected String descripcion;
 	protected String objetivo;
 	protected String nivelDificultad;
@@ -26,9 +27,10 @@ public abstract class Actividad implements Cloneable{
     protected String tipo;
 	
 	//Constructor
-	public Actividad(LearningPath lp, String descripcion, String objetivo, String nivelDificultad,
+	public Actividad(LearningPath lp, String nombre, String descripcion, String objetivo, String nivelDificultad,
 			int duracionEsperada, boolean obligatorio, Profesor creador) {
 		this.learningPath = lp;
+		this.nombre = nombre;
 		this.descripcion = descripcion;
 		this.objetivo = objetivo;
 		this.nivelDificultad = nivelDificultad;
@@ -43,6 +45,11 @@ public abstract class Actividad implements Cloneable{
 	}
 	
 	//Get and set
+	
+	public String getNombre() {
+		return nombre;
+	}
+	
 	public LearningPath getLearningPath() {
 		return learningPath;
 	}

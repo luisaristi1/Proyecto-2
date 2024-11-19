@@ -185,6 +185,8 @@ public class Profesor extends Usuario {
                 System.out.println("Por favor, ingrese un número válido.");
             }
         }
+        System.out.print("Ingrese un nombre para la encuesta: ");
+        String nombre = scanner.nextLine();
         
         System.out.print("Ingrese una descripción para la encuesta: ");
         String descripcion = scanner.nextLine();
@@ -213,7 +215,7 @@ public class Profesor extends Usuario {
             obligatorio = true;
         }
         
-        Encuesta nuevo = new Encuesta(path, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, this);
+        Encuesta nuevo = new Encuesta(path, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, this);
         
         nuevo.agregarPregunta(scanner);
         
@@ -247,6 +249,8 @@ public class Profesor extends Usuario {
                 System.out.println("Por favor, ingrese un número válido.");
             }
         }
+        System.out.print("Ingrese un nombre para la tarea: ");
+        String nombre = scanner.nextLine();
         
         System.out.print("Ingrese una descripción para la tarea: ");
         String descripcion = scanner.nextLine();
@@ -275,7 +279,7 @@ public class Profesor extends Usuario {
             obligatorio = true;
         }
         
-        Tarea tarea = new Tarea(path, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, this);
+        Tarea tarea = new Tarea(path,nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, this);
 
         añadirActividadALearningPath(tarea);
 
@@ -308,6 +312,8 @@ public class Profesor extends Usuario {
                 System.out.println("Por favor, ingrese un número válido.");
             }
         }
+        System.out.print("Ingrese un nombre para el quiz: ");
+        String nombre = scanner.nextLine();
         
         System.out.print("Ingrese una descripción para el quiz: ");
         String descripcion = scanner.nextLine();
@@ -352,7 +358,7 @@ public class Profesor extends Usuario {
             obligatorio = true;
         }
 
-        Quiz quiz = new Quiz(path, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, notaAprobacion, this);
+        Quiz quiz = new Quiz(path, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, notaAprobacion, this);
 
         boolean agregarMasPreguntas = true;
         while (agregarMasPreguntas) {
@@ -394,6 +400,8 @@ public class Profesor extends Usuario {
                 System.out.println("Por favor, ingrese un número válido.");
             }
         }
+        System.out.print("Ingrese un nombre para el examen: ");
+        String nombre = scanner.nextLine();
         
         System.out.print("Ingrese una descripción para el examen: ");
         String descripcion = scanner.nextLine();
@@ -423,7 +431,7 @@ public class Profesor extends Usuario {
             obligatorio = true;
         }
 
-        Examen examen = new Examen(path, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, this);
+        Examen examen = new Examen(path,nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, this);
         
         boolean agregarMasPreguntas = true;
         while (agregarMasPreguntas) {

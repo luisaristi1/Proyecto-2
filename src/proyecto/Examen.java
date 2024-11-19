@@ -12,9 +12,9 @@ public class Examen extends Actividad {
 	private List<String> preguntasAbiertas;
 	
 	//Constructor
-	public Examen(LearningPath lp, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
+	public Examen(LearningPath lp, String nombre, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
 			boolean obligatorio, Profesor creador) {
-		super(lp, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
+		super(lp, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
 		this.preguntasAbiertas = new ArrayList<String>();
 		// TODO Auto-generated constructor stub
 	}

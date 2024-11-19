@@ -14,12 +14,13 @@ public class Quiz extends Actividad{
 	private List<PreguntaMultiple> preguntas;
 
 	//Constructor
-	public Quiz(LearningPath lp, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
+	public Quiz(LearningPath lp, String nombre,String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
 			boolean obligatorio, double notaAprobacion, Profesor creador) {
-		super(lp, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
+		super(lp, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
 		// TODO Auto-generated constructor stub
 		this.notaAprobacion = notaAprobacion;
 		this.notaObtenida = 0.0;
+		this.tipo= "Quiz";
 		this.preguntas = new ArrayList<PreguntaMultiple>();
 	}
 	

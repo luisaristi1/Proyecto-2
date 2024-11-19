@@ -12,9 +12,9 @@ public class Encuesta extends Actividad {
 	private List<String> preguntas;
 	
 	//Constructor
-	public Encuesta(LearningPath lp, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
+	public Encuesta(LearningPath lp, String nombre, String descripcion, String objetivo, String nivelDificultad, int duracionEsperada,
 			boolean obligatorio, Profesor creador) {
-		super(lp, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
+		super(lp, nombre, descripcion, objetivo, nivelDificultad, duracionEsperada, obligatorio, creador);
 		// TODO Auto-generated constructor stub
 		this.preguntas = new ArrayList<String>();
 		this.tipo = "Encuesta";
