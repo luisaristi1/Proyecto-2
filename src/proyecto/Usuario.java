@@ -24,6 +24,9 @@ public abstract class Usuario {
 	public String getContrasena() {
 		return contrasena;
 	}
+	public void setContrasena(String contrasena) {
+		this.contrasena = contrasena;
+	}
 
 	//Metodos
 	public abstract void verLearningPaths();

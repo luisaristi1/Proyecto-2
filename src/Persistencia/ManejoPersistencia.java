@@ -37,7 +37,9 @@ import proyecto.Usuario;
 public class ManejoPersistencia {
 	private Map<String, LearningPath> mapaPaths = new HashMap<>();
 	private Map<String, Actividad> mapaActividades = new HashMap<>();
-	private Map<String, Usuario> mapaUsuarios = new HashMap<>();
+	private Map<String, Profesor> mapaProfesores = new HashMap<>();
+	private Map<String, Estudiante> mapaEstudiantes = new HashMap<>();
+
 	
 	//SECCI0N PARA ACTIVIDADES
 	
@@ -425,7 +427,7 @@ public class ManejoPersistencia {
 
 	                // Profesor creador
 	                String nombreCreador = values[7];
-	                Profesor creador = new Profesor(nombreCreador, "correo@example.com", "password");
+	                Profesor creador = mapaProfesores.get(nombreCreador);
 
 	                // Crear el LearningPath
 	                LearningPath lp = new LearningPath(titulo, descripcion, objetivos, nivelDificultad, creador, duracionEstimada);
@@ -463,156 +465,126 @@ public class ManejoPersistencia {
 	
 	
 	//FIN SECCION PARA LEARNING PATHS
-		
-	//SECCION PARA USUARIOS
-			public Map<String, Usuario> crearUsuarioData(String nombre, String email, String clave, int tipo) {
-				
-				if (tipo == 1) {
-					Profesor usu = new Profesor(nombre, email, clave);
-					mapaUsuarios.put(usu.getNombre(), usu);
-				}
-				else if (tipo == 2) {
-					Estudiante usu = new Estudiante(nombre, email, clave);
-					mapaUsuarios.put(usu.getNombre(), usu);
-				}
-				
-				guardarUsuarios(tipo);
-				   
-				return mapaUsuarios;
-			   }
-			
-			//Buscar un usuario
-			   public Usuario buscarUsuario(String nombre, int tipo) {
-				   Usuario usu = mapaUsuarios.get(nombre);
-				   
-				   if (tipo == 1) {
-					   usu = (Profesor) usu;
-					  
-				   }
-				   else if (tipo == 2) {
-					   usu = (Estudiante) usu;
-					   
-				   }
-				   return usu;
-				   
-			   }
+	    
 
-			//Modificar usuario
+		
+	//SECCION PARA ESTUDIANTES
+	    public Map<String, Estudiante> crearEstudianteData(String nombre, String correo, String contrasena){
+	    	Estudiante estu = new Estudiante(nombre, correo, contrasena);
+			mapaEstudiantes.put(estu.getNombre(), estu);
+			guardarEstudiante();
+			return mapaEstudiantes;
+	    }
+	    
+	    public Estudiante buscarEstu(String nombre) {
+			   Estudiante estu = mapaEstudiantes.get(nombre);
+			   return estu;
+		   }
+	    
+	    public Map<String, Estudiante> modificarEstudiante( String modificar, String nombreuser){
+			   Estudiante estu =  mapaEstudiantes.get(nombreuser);
+			   estu.setContrasena(modificar);
 			   
-			   public Map<String, Usuario> modificarUsuario(int parametro, String modificar, String usuario, int tipo){
-				   if (tipo == 1) {
-					   Profesor profe = (Profesor) mapaUsuarios.get(usuario);
-					   if (parametro == 1) {
-						   profe.setNombre(modificar);
-					   }
-					   else if (parametro == 2) {
-						   profe.setEmail(modificar);
-					   }
-					   else if (parametro ==3) {
-						   profe.setClave(modificar);
-					   }
+			   guardarEstudiante();
+			   
+			   return mapaEstudiantes;
+	}
+	    public ArrayList<String> formatoEstudiante(Estudiante estu){
+	    	
+			   ArrayList<String> rta = new ArrayList<>(); 
+
+			   
+			   String nombre = estu.getNombre();
+			   String email = estu.getCorreo();
+			   String clave = estu.getContrasena();
+			   
+			   String progresoPaths = "";
+			   String progresoActividades = "";
+			   
+			   HashMap<LearningPath, ProgresoPath> control = (HashMap<LearningPath, ProgresoPath>) estu.getProgresoPaths();
+			   ArrayList<ProgresoPath> progPath = (ArrayList<ProgresoPath>) control.values();	
+			   
+			   
+			   
+			   for (ProgresoPath c: progPath) {
+				   String nombrePath = c.getLp().getTitulo();
+				   progresoPaths = progresoPaths + ", " + nombrePath;
+
+			       
+			       ArrayList<ProgresoActividad> progresoAct = (ArrayList<ProgresoActividad>) estu.getProgresosAct().values();
+			       
+			       for (ProgresoActividad ca: progresoAct) {
+			    	   String miniCa = "";
+			    	   String nombreAct = ca.getActividad().getNombre();
+					   progresoActividades = progresoActividades + ", " + nombreAct;
+			    	}
+
 				   
-				   }
-				   else if (tipo == 2) {
-					   Estudiante estu = (Estudiante) mapaUsuarios.get(usuario);
-					   if (parametro == 1) {
-						   estu.setNombre(modificar);
-					   }
-					   else if (parametro == 2) {
-						   estu.setEmail(modificar);
-					   }
-					   else if (parametro ==3) {
-						   estu.setClave(modificar);
-					   }
-				  
-				   }
-				 
-				   guardarUsuarios(tipo);
-				   
-					return mapaUsuarios;
 			   }
+			   
+			   rta.add(nombre);
+			   rta.add(email);
+			   rta.add(clave);
+			   rta.add(progresoPaths);
+			   rta.add(progresoActividades);
+			   return rta;
+
+		   }
+
+	
+	    
+	    
+	    
+	    
+	 
+	    
+	    
+	 //FIN SECCION ESTUDIANTES   
+	    
+	private void guardarEstudiante() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		//SECCION PROFESORES
+	    public Map<String, Profesor> crearProfesorData(String nombre, String correo, String contrasena){
+	    	Profesor profe = new Profesor(nombre, correo, contrasena);
+			mapaProfesores.put(profe.getNombre(), profe);
+			
+			guardarProfesor();
+			
+			return mapaProfesores;
+	    }
+	    
+	  //Buscar un usuario
+	    public Profesor buscarProfe(String nombre) {
+			   Profesor profe = mapaProfesores.get(nombre);
+			   return profe;
+		   }
+	    
+	    public Map<String, Profesor> modificarProfe( String modificar, String nombreuser){
+				   Profesor profe = (Profesor) mapaProfesores.get(nombreuser);
+				   profe.setContrasena(modificar);
+				   
+				   guardarProfesor();
+				   
+				   return mapaProfesores;
+		}
+	    
+	    		   
+
+	
+			
+			private void guardarProfesor() {
+			// TODO Auto-generated method stub
+			
+		}
+
+			
+
 			
 			 //formato en string de cada usuario
-				public ArrayList<String> formatoUsuario(Usuario usu, int tipo){
-					   ArrayList<String> rta = new ArrayList<>(); 
-					   
-					   if (tipo == 1) {
-						   
-						   String nombre = usu.getNombre();
-						   String email = usu.getCorreo();
-						   String clave = usu.getContrasena();
-						   
-						   rta.add(String.valueOf(tipo));
-						   rta.add(nombre);
-						   rta.add(email);
-						   rta.add(clave);
-					   }
-					   else if(tipo == 2) {
-						   Estudiante estu = (Estudiante) usu;
-						   
-						   String nombre = estu.getNombre();
-						   String email = estu.getCorreo();
-						   String clave = estu.getContrasena();
-						   
-						   String controlPath = "";
-						   
-						   HashMap<LearningPath, ProgresoPath> control = (HashMap<LearningPath, ProgresoPath>) estu.getProgresoPaths();
-						   
-						   for (ProgresoPath c: control) {
-							   String miniString = "";
-							   
-							   String nombrePath = c.getLp().getTitulo();
-							   String enCurso = String.valueOf(c.isCompletado());
-							   
-							   SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
-						       String fechaInicio = formato.format(c.getFechaInicioPath());
-						       String fechaFinalizacion = formato.format(c.getFechaFinPath());
-						       
-						       String totalActividades = String.valueOf((c.getActividadesRealizadas().size()));
-						       String actividadesCompletadas = String.valueOf(c.getActividadesRealizadas());
-						       String progreso = String.valueOf(c.getPorcentajePath());
-						       String tasaexito =  String.valueOf(c.getTasaExito());
-						       String tasafracaso = String.valueOf(c.getTasaFracaso());
-						       String controlActividades = "";
-						       
-						       HashMap<Actividad, ProgresoActividad> progresoAct = (HashMap<Actividad, ProgresoActividad>) estu.getProgresosAct();
-						       
-						       for (ProgresoActividad ca: progresoAct) {
-						    	   String miniCa = "";
-						    	   
-						    	   String nombreCa = ca.getNombreActividad();
-						    	   String estadoCa = ca.getEstado();
-						    	   String fechaCompletarCa = formato.format(ca.getFechaCompletar());
-						    	   String tiempoDedicadoCa = String.valueOf(ca.getTiempoDedicado());
-						    	   String tasaExito = String.valueOf(ca.getTasaExitoFracaso());
-						    	   String calificacionCa = String.valueOf(ca.getCalificacion());
-						    	   String medioEntrega = ca.getMedioEntrega();
-						    	   
-						    	   miniCa = miniCa + nombreCa + ", " + estadoCa + ", " + fechaCompletarCa + ", ";
-						    	   miniCa = miniCa + tiempoDedicadoCa + ", " + tasaExito + ", " + calificacionCa + ", " + medioEntrega + "/";
-						    	   
-						    	   controlActividades = controlActividades + miniCa;
-						    	   
-						    	   //revisar como se estan separando los datos
-						       }
-						       
-						       miniString = miniString + nombrePath + "$" + enCurso + "$" + fechaInicio + "$" + fechaFinalizacion;
-						       miniString = miniString + totalActividades + "$" + actividadesCompletadas + "$" + progreso + "$" + controlActividades + "*";
-						       
-						       controlPath = controlPath + miniString;
-							   
-						   }
-						   
-						   rta.add(String.valueOf(tipo));
-						   rta.add(nombre);
-						   rta.add(email);
-						   rta.add(clave);
-						   rta.add(controlPath);
-					   }
-					   
-					   return rta;
-			   
-				}
+				
 				
 				
 				//Guardar usuarios
