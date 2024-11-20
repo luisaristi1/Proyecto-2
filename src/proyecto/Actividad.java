@@ -130,6 +130,17 @@ public abstract class Actividad implements Cloneable{
 		this.nombrePrerrequisitos = prerrequisitosString;
 	}
 	//Metodos
+	
+	public Boolean verficarReseña(Reseña resena) {
+		Boolean rta = false;
+		for (Reseña r: reseñas) {
+			if (r.equals(resena)) {
+				rta = true;
+			}
+		}
+		return rta;
+	}
+	
     public abstract void realizar(ProgresoActividad progreso);
     public abstract void editar(Profesor editor);
     

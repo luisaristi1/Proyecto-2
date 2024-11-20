@@ -70,6 +70,7 @@ public class Estudiante extends Usuario {
 	}
 
 	
+	
     public LearningPath inscribirseEnLearningPath(Scanner scanner, Registro sistema) {
     	
     	LearningPath rta = null;
