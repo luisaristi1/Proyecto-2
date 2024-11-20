@@ -94,6 +94,9 @@ public class LearningPath {
 	public Profesor getCreador() {
 		return creador;
 	}
+	public void setActividades(List<Actividad> actividades) {
+		this.actividades = actividades;
+	}
 
 	//Metodos
     public void añadirTiempoLp(Actividad actividad) {

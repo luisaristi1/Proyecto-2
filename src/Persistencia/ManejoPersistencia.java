@@ -22,19 +22,17 @@ import java.util.Scanner;
 import proyecto.Actividad;
 import proyecto.LearningPath;
 import proyecto.Profesor;
+import proyecto.ProgresoActividad;
+import proyecto.ProgresoPath;
 import proyecto.Estudiante;
 
 
-import proyecto.Actividad;
 import proyecto.Encuesta;
-import proyecto.LearningPath;
-import proyecto.Profesor;
 import proyecto.Quiz;
 import proyecto.RecursoEducativo;
 import proyecto.Reseña;
 import proyecto.Tarea;
 import proyecto.Usuario;
-import proyecto.Estudiante;
 
 public class ManejoPersistencia {
 	private Map<String, LearningPath> mapaPaths = new HashMap<>();
@@ -295,248 +293,174 @@ public class ManejoPersistencia {
 		
 		
 	//SECCION PARA LEARNING PATHS
+	    /**
+	     * Crear o actualizar un LearningPath en el mapa y persistir los cambios.
+	     */
+	    public Map<String, LearningPath> crearPathData(LearningPath lp) {
+	        mapaPaths.put(lp.getTitulo(), lp);
+	        guardarPaths();
+	        return mapaPaths;
+	    }
+
+	    /**
+	     * Buscar un LearningPath por nombre.
+	     */
+	    public LearningPath buscarPath(String nombre) {
+	        return mapaPaths.get(nombre);
+	    }
+
+	    /**
+	     * Modificar un LearningPath según un parámetro específico.
+	     */
+	    public Map<String, LearningPath> modificarPath(int parametro, String modificar, String path) {
+	        LearningPath lp = mapaPaths.get(path);
+	        if (lp == null) {
+	            System.out.println("Error: LearningPath no encontrado.");
+	            return mapaPaths;
+	        }
+
+	        Date fechaHoy = new Date();
+	        lp.setFechaModificacion(fechaHoy);
+
+	        switch (parametro) {
+	            case 1 -> lp.setTitulo(modificar);
+	            case 2 -> lp.setDescripcion(modificar);
+	            case 3 -> lp.setObjetivos(modificar);
+	            case 4 -> {
+	                String nivel = switch (modificar.toLowerCase()) {
+	                    case "bajo" -> "Bajo";
+	                    case "medio" -> "Medio";
+	                    case "alto" -> "Alto";
+	                    default -> throw new IllegalArgumentException("Nivel de dificultad no válido.");
+	                };
+	                lp.setNivelDificultad(nivel);
+	            }
+	            case 5 -> {
+	                
+	                lp.añadirTiempoLp(mapaActividades.get(modificar)); // Debes pasar una instancia de Actividad que modifique el tiempo.
+	            }
+	            case 6 -> {
+	                List<Actividad> actividades = lp.getActividades();
+	                Actividad actividad = mapaActividades.get(modificar);
+	                if (actividad == null) {
+	                    System.out.println("Error: Actividad no encontrada.");
+	                    return mapaPaths;
+	                }
+
+	                System.out.println("Ingrese 1 para agregar la actividad o 2 para eliminarla:");
+	                Scanner scanner = new Scanner(System.in);
+	                int opcion = scanner.nextInt();
+	                if (opcion == 1) actividades.add(actividad);
+	                else if (opcion == 2) actividades.remove(actividad);
+	                else System.out.println("Opción no válida.");
+	                lp.setActividades(actividades);
+	            }
+	            default -> System.out.println("Parámetro no válido.");
+	        }
+
+	        guardarPaths();
+	        return mapaPaths;
+	    }
+
+	    /**
+	     * Formatear un LearningPath en una lista de cadenas para guardar en un archivo.
+	     */
+	    public ArrayList<String> formatoPath(LearningPath lp) {
+	        ArrayList<String> rta = new ArrayList<>();
+	        rta.add(lp.getTitulo());
+	        rta.add(lp.getDescripcion());
+	        rta.add(lp.getObjetivos());
+	        rta.add(lp.getNivelDificultad());
+	        rta.add(String.valueOf(lp.getDuracionEstimada()));
+	        rta.add(new SimpleDateFormat("dd-MM-yyyy").format(lp.getFechaCreacion()));
+	        rta.add(new SimpleDateFormat("dd-MM-yyyy").format(lp.getFechaModificacion()));
+	        rta.add(lp.getCreador().getNombre());
+
+	        // Formatear actividades asociadas
+	        String actividades = String.join(",", lp.getActividades().stream().map(Actividad::getNombre).toList());
+	        rta.add(actividades);
+
+	        return rta;
+	    }
+
+	    /**
+	     * Guardar el mapa de LearningPaths en un archivo CSV.
+	     */
+	    public Map<String, LearningPath> guardarPaths() {
+	        String nombreCSV = "data/datosPaths.csv";
+
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+	            for (String llave : mapaPaths.keySet()) {
+	                ArrayList<String> lineaPath = formatoPath(mapaPaths.get(llave));
+	                String line = String.join(";", lineaPath);
+	                writer.write(line);
+	                writer.newLine();
+	            }
+	            System.out.println("LearningPaths guardados exitosamente.");
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
+	        return mapaPaths;
+	    }
 		
-		public Map<String, LearningPath> crearPathData(int duracion, String creador, String titulo, String descripcion,
-				String objetivo, String contenido, int nivelDificultad, String fechaCreacion) {
-			
-			LearningPath nuevoPath = new LearningPath(duracion, creador, titulo, descripcion, objetivo, contenido, nivelDificultad, fechaCreacion);
-			
-			mapaPaths.put(nuevoPath.getTitulo(), nuevoPath);
-			
-			guardarPaths();
-			   
-			return mapaPaths;
-		   }
-		
-		//Buscar un path
-		   public LearningPath buscarPath(String nombre) {
-			   return mapaPaths.get(nombre);
-		   }
-		
-		
-		public Map<String, LearningPath> modificarPath(int parametro, String modificar, String path){
-			   LearningPath lp = mapaPaths.get(path); 
-			   
-			   LocalDate fechaHoy = LocalDate.now();
-		       DateTimeFormatter formateador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-		       String fechaFormateada = fechaHoy.format(formateador);
-			   
-		       lp.setFechaModificacion(fechaFormateada);
-		       
-			   if (parametro == 1) {
-				   lp.setTitulo(modificar);
-			   }
-			   
-			   else if (parametro == 2) {
-				   lp.setDescripcion(modificar);
-			   }
-			   
-			   else if (parametro == 3) {
-				   lp.setObjetivo(modificar);
-			   }
-			   
-			   else if (parametro == 4) {
-				   lp.setContenido(modificar);
-			   }
-			   
-			   else if (parametro == 5) {
-				   int m = Integer.parseInt(modificar);
-				   lp.setNivelDificultad(m);
-			   }
-			   
-			   else if (parametro == 6) {
-				   int m = Integer.parseInt(modificar);
-				   lp.setDuracion(m);
-			   }
-			   
-			   else if (parametro == 7) {				   
-				   ArrayList<Actividad> actividades = lp.getActividades();
-				   Actividad actividad = mapaActividades.get(modificar);
-				   
-				   System.out.println("Ingrese 1 para agregar la actividad ingresada, o 2 para eliminarla.");
-				   
-				   Scanner scanner = new Scanner(System.in);
-			       int numero = scanner.nextInt();
-			       scanner.close();
-				   
-				   if (numero == 1) {
-					   actividades.add(actividad);
-				   }
-				   
-				   else if (numero == 2) {
-					   actividades.remove(actividad);
-				   }
-				   
-				   lp.setActividades(actividades);
-				   
-			   }
-			   
-			   guardarPaths();
-			   
-			   return mapaPaths;   
-		}
-			   
-		//formato en string de cada path
-		public ArrayList<String> formatoPath(LearningPath lp){
-			   ArrayList<String> rta = new ArrayList<>();
-			   
-			   String creador = lp.getCreador();
-			   String titulo = lp.getTitulo();
-			   String descripcion = lp.getDescripcion();
-			   String objetivo = lp.getObjetivo();
-			   String contenido = lp.getContenido();
-			   String nivelDificultad = String.valueOf(lp.getNivelDificultad());
-			   String duracion = String.valueOf(lp.getDuracionTotal());
-			   String fechaCreacion = lp.getFechaCreacion();
-			   String fechaModificacion = lp.getFechaModificacion();
-			   String rating = String.valueOf(lp.getRating());
-			   String sumaRating = String.valueOf(lp.getSumaRating());
-			   
-			   ArrayList<Actividad> acti = lp.getActividades();
-			   String actividades = "";
-			   
-			   for (Actividad a: acti) {
-				   String nombreActividad = a.getNombre();
-				   
-				   if (actividades.length() == 0) {
-		    		   actividades = actividades + nombreActividad;
-		    	   } else {
-		    		   actividades = actividades + ", " + nombreActividad;
-		    	   }   
-			   }
-			   
-			   ArrayList<Feedback> feed = lp.getFeedback();
-			   String feedback = "";
-			   
-			   for (Feedback f: feed) {
-				   String miniString = "";
-				   String com = f.getComentario();
-				 
-				   SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
-			       String fecha = formato.format(f.getFecha());
-			       
-			       String usu = f.getUsuario();
-			       String ra = String.valueOf(f.getRating());
-			       
-			       miniString = miniString + com + ", " + fecha + ", " + usu + ", " + ra + "/";
-			       feedback = feedback + miniString;
-				   
-			   }
-			   
-			   rta.add(creador);
-			   rta.add(titulo);
-			   rta.add(descripcion);
-			   rta.add(objetivo);
-			   rta.add(contenido);
-			   rta.add(nivelDificultad);
-			   rta.add(duracion);
-			   rta.add(fechaCreacion);
-			   rta.add(fechaModificacion);
-			   rta.add(rating);
-			   rta.add(sumaRating);
-			   rta.add(actividades);
-			   rta.add(feedback);
-			   
-			   
-		       return rta;
-		   }
-		
-		//Guardar paths
-		   public Map<String, LearningPath> guardarPaths(){
-			   String nombreCSV = "data/datosPaths.csv";
-			   
-			   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
-		           for (String llave: mapaPaths.keySet()) {
-		        	   ArrayList<String> lineaPath = formatoPath(mapaPaths.get(llave));
-		        	   String line = String.join(";", lineaPath);
-		               writer.write(line);
-		               writer.newLine();
-		           }
-		      
-		           System.out.println("Se ha guardado exitosamente.");
-		           
-		       } catch (IOException e) {
-		           e.printStackTrace();
-		       }
-			   
-			   return mapaPaths;
-		   }
-		   
-		 //Se lee el archivo y se crea el mapa de paths
-			public Map<String, LearningPath> crearMapaPaths(){
-				String nombreCSV = "data/datosPaths.csv";
-				
-				long milisegundos = 1636627200000L; //para inicializar date
-			       Date fechaFeed = new Date(milisegundos);
-				
-				try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
-		            String line;
-		            while ((line = br.readLine()) != null) {
-		                String[] values = line.split(";");
-		                
-		                String creador = values[0];
-		                String titulo = values[1];
-		                String descripcion = values[2];
-		                String objetivo = values[3];
-		                String contenido = values[4];
-		                int nivelDificultad = Integer.parseInt(values[5]);
-		                int duracion = Integer.parseInt(values[6]);
-		                String fechaCreacion = values[7];
-		                String fechaModificacion = values[8];
-		                float rating = Float.parseFloat(values[9]);
-		                float sumaRating = Float.parseFloat(values[10]);
-		               
-		                ArrayList<Actividad> actividades = new ArrayList<>();
-		                String[] act = values[11].split(",");
-		                
-		                for (String nombreActividad: act) {
-		                	Actividad actividadAgregar = mapaActividades.get(nombreActividad);
-		                	actividades.add(actividadAgregar);
-		                }
-		                
-		                ArrayList<Feedback> feedback = new ArrayList<>();
-		                String[] feed = values[12].split("/");
-		                
-		                for (String f: feed) {
-		                	String[] fifi = f.split(",");
-		                	
-		                	String comentarioFeed = fifi[0];
-		                	
-		                	SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
-		                    String fech = fifi[1];
-		                    
-		                    try {
-		         			fechaFeed = formato.parse(fech);
-		         		} catch (ParseException e) {
-		         			e.printStackTrace();
-		         		}
-		                    String usuarioFeed = fifi[2];
-		                    float ratingFeed = Float.parseFloat(fifi[3]);
-		                    
-		                	Feedback feedbackGuardar = new Feedback(comentarioFeed, fechaFeed, usuarioFeed, ratingFeed);
-		                	feedback.add(feedbackGuardar);
-		                	
-		                }
-		                
-		                LearningPath lpAgregar = new LearningPath(duracion, creador, titulo, descripcion, objetivo, contenido, nivelDificultad, fechaCreacion);
-		                lpAgregar.setActividades(actividades);
-		                lpAgregar.setFeedback(feedback);
-		                lpAgregar.setRating(rating);
-		                lpAgregar.setSumaRating(sumaRating);
-		                lpAgregar.setFechaModificacion(fechaModificacion);
-		                
-		                mapaPaths.put(lpAgregar.getTitulo(), lpAgregar);
-		           
-		            }
-		                         
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
-				
-				System.out.println("Los paths se han cargado exitosamente.");
-				
-				return mapaPaths;
-			}	   
+	    /**
+	     * Leer un archivo CSV y crear el mapa de LearningPaths.
+	     */
+	    public Map<String, LearningPath> crearMapaPaths() {
+	        String nombreCSV = "data/datosPaths.csv";
+
+	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	            String line;
+	            while ((line = br.readLine()) != null) {
+	                String[] values = line.split(";");
+	                String titulo = values[0];
+	                String descripcion = values[1];
+	                String objetivos = values[2];
+	                String nivelDificultad = values[3];
+	                int duracionEstimada = Integer.parseInt(values[4]);
+	                SimpleDateFormat formatoFecha = new SimpleDateFormat("dd-MM-yyyy");
+	                Date fechaCreacion = formatoFecha.parse(values[5]);
+	                Date fechaModificacion = formatoFecha.parse(values[6]);
+
+	                // Profesor creador
+	                String nombreCreador = values[7];
+	                Profesor creador = new Profesor(nombreCreador, "correo@example.com", "password");
+
+	                // Crear el LearningPath
+	                LearningPath lp = new LearningPath(titulo, descripcion, objetivos, nivelDificultad, creador, duracionEstimada);
+	                lp.setFechaCreacion(fechaCreacion);
+	                lp.setFechaModificacion(fechaModificacion);
+
+	                // Procesar actividades
+	                List<Actividad> actividades = new ArrayList<>();
+	                String[] nombresActividades = values[8].split(",");
+	                for (String nombreActividad : nombresActividades) {
+	                    Actividad actividad = cargarActividad(nombreActividad);
+	                    if (actividad != null) actividades.add(actividad);
+	                }
+	                lp.setActividades(actividades);
+
+	                // Procesar reseñas
+	               
+
+	                mapaPaths.put(lp.getTitulo(), lp);
+	            }
+	        } catch (IOException | ParseException e) {
+	            e.printStackTrace();
+	        }
+
+	        System.out.println("LearningPaths cargados exitosamente.");
+	        return mapaPaths;
+	    }
+
+	    /**
+	     * Cargar una actividad desde el mapa de actividades.
+	     */
+	    private Actividad cargarActividad(String nombreActividad) {
+	        return mapaActividades.getOrDefault(nombreActividad, null);
+	    }
+	
 	
 	//FIN SECCION PARA LEARNING PATHS
 		
@@ -615,8 +539,8 @@ public class ManejoPersistencia {
 					   if (tipo == 1) {
 						   
 						   String nombre = usu.getNombre();
-						   String email = usu.getEmail();
-						   String clave = usu.getClave();
+						   String email = usu.getCorreo();
+						   String clave = usu.getContrasena();
 						   
 						   rta.add(String.valueOf(tipo));
 						   rta.add(nombre);
@@ -627,31 +551,33 @@ public class ManejoPersistencia {
 						   Estudiante estu = (Estudiante) usu;
 						   
 						   String nombre = estu.getNombre();
-						   String email = estu.getEmail();
-						   String clave = estu.getClave();
+						   String email = estu.getCorreo();
+						   String clave = estu.getContrasena();
 						   
 						   String controlPath = "";
 						   
-						   ArrayList<ControlPath> control = estu.getControlPaths();
+						   HashMap<LearningPath, ProgresoPath> control = (HashMap<LearningPath, ProgresoPath>) estu.getProgresoPaths();
 						   
-						   for (ControlPath c: control) {
+						   for (ProgresoPath c: control) {
 							   String miniString = "";
 							   
-							   String nombrePath = c.getNombrePath();
-							   String enCurso = String.valueOf(c.isEnCurso());
+							   String nombrePath = c.getLp().getTitulo();
+							   String enCurso = String.valueOf(c.isCompletado());
 							   
 							   SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
-						       String fechaInicio = formato.format(c.getFechaInicio());
-						       String fechaFinalizacion = formato.format(c.getFechaFinalizacion());
+						       String fechaInicio = formato.format(c.getFechaInicioPath());
+						       String fechaFinalizacion = formato.format(c.getFechaFinPath());
 						       
-						       String totalActividades = String.valueOf(c.getTotalActividades());
-						       String actividadesCompletadas = String.valueOf(c.getActividadesCompletadas());
-						       String progreso = String.valueOf(c.getProgreso());
+						       String totalActividades = String.valueOf((c.getActividadesRealizadas().size()));
+						       String actividadesCompletadas = String.valueOf(c.getActividadesRealizadas());
+						       String progreso = String.valueOf(c.getPorcentajePath());
+						       String tasaexito =  String.valueOf(c.getTasaExito());
+						       String tasafracaso = String.valueOf(c.getTasaFracaso());
 						       String controlActividades = "";
 						       
-						       ArrayList<ControlActividad> controlActi = c.getActividades();
+						       HashMap<Actividad, ProgresoActividad> progresoAct = (HashMap<Actividad, ProgresoActividad>) estu.getProgresosAct();
 						       
-						       for (ControlActividad ca: controlActi) {
+						       for (ProgresoActividad ca: progresoAct) {
 						    	   String miniCa = "";
 						    	   
 						    	   String nombreCa = ca.getNombreActividad();
