@@ -52,7 +52,25 @@ import java.util.List;
 	public List<Actividad> getActividadesRealizadas() {
 		return actividadesRealizadas;
 	}
-
+	
+	public void setActividadesRealizadas(List<Actividad> actividadesR) {
+		this.actividadesRealizadas = actividadesR;
+	}
+	
+	public void setPorcentajePath(float porcentajeP) {
+		this.porcentajePath=porcentajeP;
+	}
+	
+	public void setTasaExito(float tasaE) {
+		this.tasaExito= tasaE;
+	}
+	public void setTasaFracaso(float tasaF) {
+		this.tasaFracaso= tasaF;
+	}
+	public void setCompletado(boolean completado) {
+		this.completado= completado;
+	}
+	
 	public LearningPath getLp() {
 		return lp;
 	}

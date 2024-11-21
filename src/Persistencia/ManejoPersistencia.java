@@ -39,6 +39,8 @@ public class ManejoPersistencia {
 	private Map<String, Actividad> mapaActividades = new HashMap<>();
 	private Map<String, Profesor> mapaProfesores = new HashMap<>();
 	private Map<String, Estudiante> mapaEstudiantes = new HashMap<>();
+	private Map<String, ProgresoPath> mapaProgresoPath = new HashMap<>();
+	private Map<String, ProgresoActividad> mapaProgresoActividad = new HashMap<>();
 
 	
 	//SECCI0N PARA ACTIVIDADES
@@ -768,17 +770,142 @@ public class ManejoPersistencia {
 		        return mapaProfesores;
 		    }
 
-			
-			 //formato en string de cada usuario
-				
-				
-				
-				//Guardar usuarios
-				   
-			
   
 				   
 
-	//FIN SECCION PARA USUARIOS
+	//FIN SECCION PARA PROFESORES
+		    
+		    
+		    
+ // SECCION PROGRESOPATH
+		    public Map<String, ProgresoPath> crearProgresoPathData(ProgresoPath pPath ){
+				mapaProgresoPath.put(pPath.getLp().getTitulo(), pPath);
+				guardarProfesor();
+				return mapaProgresoPath;
+		    }
+
+
+		    public ArrayList<String> formatoProgresoPath(ProgresoPath progreso) {
+		        ArrayList<String> rta = new ArrayList<>();
+
+		        String nombreLP = progreso.getLp().getTitulo();
+		        String fechaInicio = new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaInicioPath());
+		        String fechaFin = progreso.getFechaFinPath() != null
+		                ? new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaFinPath())
+		                : "N/A"; // Si fechaFin es nula, se usa "N/A"
+
+		        String porcentaje = String.valueOf(progreso.getPorcentajePath());
+		        String tasaExito = String.valueOf(progreso.getTasaExito());
+		        String tasaFracaso = String.valueOf(progreso.getTasaFracaso());
+
+		        // Convertir lista de actividades realizadas a un String separado por comas
+		        String actividadesRealizadas = progreso.getActividadesRealizadas() != null
+		                ? String.join(",", progreso.getActividadesRealizadas().stream().map(Actividad::getNombre).toArray(String[]::new))
+		                : "";
+
+		        String completado = String.valueOf(progreso.isCompletado());
+		        String nombreEstudiante = progreso.getEstudiante().getNombre();
+
+		        rta.add(nombreLP);
+		        rta.add(fechaInicio);
+		        rta.add(fechaFin);
+		        rta.add(porcentaje);
+		        rta.add(tasaExito);
+		        rta.add(tasaFracaso);
+		        rta.add(actividadesRealizadas);
+		        rta.add(completado);
+		        rta.add(nombreEstudiante);
+
+		        return rta;
+		    }
+
+		    public Map<String, ProgresoPath> guardarProgresoPath() {
+		        String nombreCSV = "data/datosProgresoPath.csv";
+
+		        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+		            for (String llave : mapaProgresoPath.keySet()) {
+		                ArrayList<String> lineaProgreso = formatoProgresoPath(mapaProgresoPath.get(llave));
+		                String line = String.join(";", lineaProgreso);
+		                writer.write(line);
+		                writer.newLine();
+		            }
+
+		            System.out.println("Progresos de LearningPaths guardados exitosamente.");
+		        } catch (IOException e) {
+		            e.printStackTrace();
+		        }
+
+		        return mapaProgresoPath;
+		    }
+
+		    public Map<String, ProgresoPath> cargarProgresoPaths() {
+		        String nombreCSV = "data/datosProgresoPath.csv";
+
+		        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+		            String line;
+		            while ((line = br.readLine()) != null) {
+		                String[] values = line.split(";");
+
+		                // Extraer atributos de ProgresoPath
+		                String nombreLP = values[0];
+		                Date fechaInicio = new SimpleDateFormat("dd-MM-yyyy").parse(values[1]);
+		                Date fechaFin = values[2].equals("N/A") ? null : new SimpleDateFormat("dd-MM-yyyy").parse(values[2]);
+		                float porcentaje = Float.parseFloat(values[3]);
+		                float tasaExito = Float.parseFloat(values[4]);
+		                float tasaFracaso = Float.parseFloat(values[5]);
+
+		                // Cargar actividades realizadas
+		                String[] actividadesRealizadasData = values[6].split(",");
+		                List<Actividad> actividadesRealizadas = new ArrayList<>();
+		                for (String act : actividadesRealizadasData) {
+		                    Actividad actividad = mapaActividades.get(act.trim());
+		                    if (actividad != null) {
+		                        actividadesRealizadas.add(actividad);
+		                    } else {
+		                        System.out.println("Advertencia: Actividad '" + act + "' no encontrada para ProgresoPath " + nombreLP);
+		                    }
+		                }
+
+		                boolean completado = Boolean.parseBoolean(values[7]);
+		                String nombreEstudiante = values[8];
+		                Estudiante estudiante = mapaEstudiantes.get(nombreEstudiante);
+
+		                if (estudiante == null) {
+		                    System.out.println("Advertencia: Estudiante '" + nombreEstudiante + "' no encontrado.");
+		                    continue;
+		                }
+
+		                LearningPath lp = mapaPaths.get(nombreLP);
+		                if (lp == null) {
+		                    System.out.println("Advertencia: LearningPath '" + nombreLP + "' no encontrado.");
+		                    continue;
+		                }
+
+		                // Crear el ProgresoPath con atributos básicos
+		                ProgresoPath progreso = new ProgresoPath(lp, fechaInicio, estudiante);
+
+		                // Establecer atributos adicionales
+		                progreso.setFechaFinPath(fechaFin);
+		                progreso.setPorcentajePath(porcentaje);
+		                progreso.setTasaExito(tasaExito);
+		                progreso.setTasaFracaso(tasaFracaso);
+		                progreso.setActividadesRealizadas(actividadesRealizadas);
+		                progreso.setCompletado(completado);
+
+		                // Añadir al mapa
+		                mapaProgresoPath.put(nombreLP, progreso);
+		            }
+		        } catch (IOException | ParseException e) {
+		            e.printStackTrace();
+		        }
+
+		        System.out.println("Progresos de LearningPaths cargados exitosamente.");
+		        return mapaProgresoPath;
+		    }
+
+
+
+		
+		    
 	}
 	
