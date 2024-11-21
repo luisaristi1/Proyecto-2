@@ -569,6 +569,12 @@ public class Profesor extends Usuario {
 			System.out.println("No tiene los permisos para calificar esta actividad.");
 		}
 	}
+
+	public void setLearningPathsCreados(List<LearningPath> listaLPCreados) {
+		// TODO Auto-generated method stub
+		this.learningPathsCreados = listaLPCreados;
+		
+	}
 	
 
 }
