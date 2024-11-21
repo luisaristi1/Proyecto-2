@@ -4,14 +4,114 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import proyecto.Estudiante;
+import proyecto.Profesor;
+import proyecto.Registro;
+
 class PruebasIntegracion {
 
-	@BeforeEach
+	Registro registro = new Registro();
+	Profesor p1 = new Profesor("Carlos Dias", "c.dias@gmail.com", "zaq12wsx");
+	Profesor p2 = new Profesor("Laura Diaz", "l.diaz@gmail.com", "12345678");
+	Profesor p3 = new Profesor("Manuel Villamil", "m.villamil@gmail.com", "87654321");
 	
 	
+	
+	
+	Estudiante e1 = new Estudiante("Natalia Perez", "n.perez@gmail.com", "12345678");
+	Estudiante e2 = new Estudiante("Julian Tellez", "j.tellez@gmail.com", "09876544");
+	Estudiante e3 = new Estudiante("Claudia Montero", "n.perez@gmail.com", "12345678");
+	
+	
+	
+	//registrar profesor
 	@Test
-	void test() {
-		fail("Not yet implemented");
+	void test1() {
+		registro.registrarProfesor(p1);
+		Boolean rta = registro.verificarUsuarioExistente(p1);
+		
+		assertEquals(true, rta);
+		
 	}
+	
+	//registrar estudiante
+	@Test
+	void test2() throws Exception {
+		registro.registrarEstudiante(e1);
+		Boolean rta = registro.verificarUsuarioExistente(e1);
+			
+		assertEquals(true, rta);
+			
+	}
+	
+	
+	//login profesor existente
+		@Test
+		void test3() throws Exception {
+			registro.loginProfesor("c.dias@gail.com", "zaq12wsx");
+			Boolean rta = registro.verificarUsuarioExistente(p1);
+			assertEquals(true, rta);
+				
+		}
+		
+		//login estudiante existente
+				@Test
+				void test4() throws Exception {
+					registro.loginEstudiante("n.perez@gmail.com", "12345678");
+					Boolean rta = registro.verificarUsuarioExistente(e1);
+					assertEquals(true, rta);
+						
+				}
+				
+				//login profesor no existente
+				@Test
+				void test5() throws Exception {
+					registro.loginProfesor("l.diaz@gmail.com", "12345678");
+					Boolean rta = registro.verificarUsuarioExistente(p2);
+					assertEquals(false, rta);
+						
+				}	
+				
+				//login estudiante no existente
+				@Test
+				void test6() throws Exception {
+					registro.loginProfesor("j.tellez@gmail.com", "09876544");
+					Boolean rta = registro.verificarUsuarioExistente(e2);
+					assertEquals(false, rta);
+						
+				}	
+				
+				//registrar estudiante ya registrado
+				@Test
+				void test7() throws Exception {
+					registro.registrarEstudiante(e1);
+					registro.registrarEstudiante(e1);
+					Boolean rta = registro.verificarUsuarioExistente(e1);
+						
+					assertEquals(true, rta);
+						
+				}
+	
+				//registrar profesor ya registrado
+				@Test
+				void test8() {
+					registro.registrarProfesor(p1);
+					registro.registrarProfesor(p1);
+					Boolean rta = registro.verificarUsuarioExistente(p1);
+					
+					assertEquals(true, rta);
+					
+				}
+				
+	//RUTAS DE APRENDIZAJE
+				
+	
+				
+		
+		
+		
+		
+	
+	
 
 }
