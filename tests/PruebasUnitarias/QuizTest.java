@@ -1,10 +1,17 @@
-
+package PruebasUnitarias;
 import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 import org.junit.Before;
 import org.junit.Test;
+
+import proyecto.Actividad;
+import proyecto.LearningPath;
+import proyecto.Profesor;
+import proyecto.ProgresoActividad;
+import proyecto.Quiz;
+import proyecto.Reseña;
 
 public class QuizTest {
 
@@ -37,13 +44,12 @@ public class QuizTest {
 
     @Test
     public void testAgregarPregunta() {
-        Scanner scanner = new Scanner("¿Pregunta de prueba?
-Opción 1
-Opción 2
-Opción 3
-Opción 4
-1
-");
+        Scanner scanner = new Scanner("¿Pregunta de prueba?"
+        		+ "Opción 1"
+        		+ "Opción 2"
+        		+ "Opción 3"
+        		+ "Opción 4"
+        		+ "1");
         quiz.agregarPregunta(scanner);
         assertEquals(1, quiz.getPreguntas().size());
         assertTrue(quiz.getPreguntas().get(0).getTextoPregunta().contains("¿Pregunta de prueba?"));
@@ -51,16 +57,14 @@ Opción 4
 
     @Test
     public void testCalcularNotaObtenidaCorrectamente() {
-        Scanner scanner = new Scanner("¿Pregunta?
-Opción 1
-Opción 2
-Opción 3
-Opción 4
-1
-");
+        Scanner scanner = new Scanner("¿Pregunta de prueba?"
+        		+ "Opción 1"
+        		+ "Opción 2"
+        		+ "Opción 3"
+        		+ "Opción 4"
+        		+ "1");
         quiz.agregarPregunta(scanner);
-        Scanner respuestaScanner = new Scanner("1
-");
+        Scanner respuestaScanner = new Scanner("1");
         String resultado = quiz.realizarQuiz(respuestaScanner);
         assertEquals("Aprobada", resultado);
         assertEquals(100.0, quiz.getNotaObtenida(), 0.01);
@@ -68,16 +72,14 @@ Opción 4
 
     @Test
     public void testDeterminarResultado() {
-        Scanner scanner = new Scanner("¿Pregunta?
-Opción 1
-Opción 2
-Opción 3
-Opción 4
-1
-");
+        Scanner scanner = new Scanner("¿Pregunta de prueba?"
+        		+ "Opción 1"
+        		+ "Opción 2"
+        		+ "Opción 3"
+        		+ "Opción 4"
+        		+ "1");
         quiz.agregarPregunta(scanner);
-        Scanner respuestaScanner = new Scanner("2
-"); // Respuesta incorrecta
+        Scanner respuestaScanner = new Scanner("2"); // Respuesta incorrecta
         String resultado = quiz.realizarQuiz(respuestaScanner);
         assertEquals("Reprobada", resultado);
         assertEquals(0.0, quiz.getNotaObtenida(), 0.01);

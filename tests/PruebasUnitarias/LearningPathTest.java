@@ -3,9 +3,11 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import proyecto.Actividad;
 import proyecto.LearningPath;
 import proyecto.Profesor;
 import proyecto.Reseña;
+import proyecto.Tarea;
 
 import java.util.Date;
 
@@ -13,6 +15,7 @@ public class LearningPathTest {
 
     private LearningPath learningPath;
     private Profesor creador;
+    private Actividad actividad;
 
     @Before
     public void setUp() {

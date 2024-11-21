@@ -1,7 +1,13 @@
-
+package PruebasUnitarias;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import proyecto.Actividad;
+import proyecto.Estudiante;
+import proyecto.ProgresoActividad;
+import proyecto.Tarea;
+
 import java.util.Date;
 
 public class ProgresoActividadTest {

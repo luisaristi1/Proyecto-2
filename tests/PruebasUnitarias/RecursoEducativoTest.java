@@ -1,7 +1,15 @@
-
+package PruebasUnitarias;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import proyecto.Estudiante;
+import proyecto.LearningPath;
+import proyecto.Profesor;
+import proyecto.ProgresoActividad;
+import proyecto.RecursoEducativo;
+import proyecto.Reseña;
+
 import java.util.Date;
 
 public class RecursoEducativoTest {
@@ -32,24 +40,19 @@ public class RecursoEducativoTest {
 
     @Test
     public void testCambiarTipoDeRecurso() {
-        recurso.cambios(new java.util.Scanner("recurso
-NuevoTipo
-"));
+        recurso.cambios(new java.util.Scanner("recursoNuevoTipo"));
         assertEquals("NuevoTipo", recurso.getTipoRecurso());
     }
 
     @Test
     public void testCambiarEnlaceDelRecurso() {
-        recurso.cambios(new java.util.Scanner("enlace
-http://nuevoenlace.com
-"));
+        recurso.cambios(new java.util.Scanner("enlacehttp://nuevoenlace.com"));
         assertEquals("http://nuevoenlace.com", recurso.getEnlaceRecurso());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testManejoDeOpcionInvalida() {
-        recurso.cambios(new java.util.Scanner("opcionInvalida
-"));
+        recurso.cambios(new java.util.Scanner("opcionInvalida"));
     }
 
     @Test

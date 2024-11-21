@@ -1,7 +1,15 @@
-
+package PruebasUnitarias;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import proyecto.Actividad;
+import proyecto.Estudiante;
+import proyecto.LearningPath;
+import proyecto.Profesor;
+import proyecto.ProgresoPath;
+import proyecto.Tarea;
+
 import java.util.Date;
 
 public class ProgresoPathTest {
@@ -9,6 +17,7 @@ public class ProgresoPathTest {
     private ProgresoPath progresoPath;
     private LearningPath learningPath;
     private Estudiante estudiante;
+    private Actividad actividad;
 
     @Before
     public void setUp() {

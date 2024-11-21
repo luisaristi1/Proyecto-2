@@ -1,12 +1,21 @@
-
+package PruebasUnitarias;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import proyecto.Actividad;
+import proyecto.Estudiante;
+import proyecto.LearningPath;
+import proyecto.Profesor;
+import proyecto.Reseña;
+import proyecto.Tarea;
+import proyecto.Usuario;
+
 public class UsuarioTest {
 
-    private Usuario estudiante;
-    private Usuario profesor;
+    private Estudiante estudiante;
+    private Profesor profesor;
+    private Actividad actividad;
 
     @Before
     public void setUp() {

@@ -1,12 +1,20 @@
-
+package PruebasUnitarias;
 import static org.junit.Assert.*;
 import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 
+import proyecto.Actividad;
+import proyecto.Estudiante;
+import proyecto.Profesor;
+import proyecto.ProgresoActividad;
+import proyecto.Reseña;
+import proyecto.Tarea;
+
 public class TareaTest {
     private Tarea tarea;
     private Profesor profesor;
+    private Actividad actividad;
 
     @Before
     public void setUp() {

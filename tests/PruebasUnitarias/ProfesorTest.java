@@ -2,14 +2,25 @@ package PruebasUnitarias;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import proyecto.Actividad;
+import proyecto.Encuesta;
+import proyecto.LearningPath;
+import proyecto.Profesor;
+import proyecto.RecursoEducativo;
+import proyecto.Registro;
+import proyecto.Tarea;
+
 import java.util.List;
+import java.util.Scanner;
 import java.util.ArrayList;
 
 public class ProfesorTest {
 
     private Profesor profesor;
     private LearningPath learningPath;
-
+    private Actividad actividad;
+    
     @Before
     public void setUp() {
         profesor = new Profesor("Profesor Test", "profesor@test.com", "password");
