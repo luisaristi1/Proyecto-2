@@ -65,6 +65,18 @@ public class Profesor extends Usuario {
 			}
 		}
 		return rta;
+		
+		
+	}
+	
+	public Boolean verificarPathExistente(LearningPath lp) {
+		Boolean rta = false;
+		for (LearningPath lpp: learningPathsCreados) {
+			if (lpp.equals(lp)) {
+						rta = true;
+					}
+				}
+		return rta;
 	}
 	
     public LearningPath crearLearningPath(String titulo, String descripcion, String objetivos, String nivelDificultad, int duracionEstimada, Registro sistema) {
@@ -74,6 +86,47 @@ public class Profesor extends Usuario {
         System.out.println("Learning Path creado exitosamente.");
         sistema.agregarPaths(nuevoLP);
         return nuevoLP;
+    }
+    
+    public void editarAtributosPath(LearningPath lp) {
+        boolean opcionValida = false;
+        Scanner scanner = new Scanner(System.in);
+        while (!opcionValida) {
+            try {
+                System.out.println("\nSeleccione el atributo que desea editar:");
+                System.out.println("1. Título");
+                System.out.println("2. Descripción");
+                System.out.println("3. Objetivos");
+                System.out.println("4. Nivel de Dificultad");
+                System.out.print("Opción: ");
+                int opcion = Integer.parseInt(scanner.nextLine());
+
+                if (opcion < 1 || opcion > 5) {
+                    System.out.println("Selección no válida. Por favor, intente nuevamente.");
+                } else {
+                    System.out.print("Ingrese el nuevo valor: ");
+                    String nuevoValor = scanner.nextLine();
+                    switch (opcion) {
+                        case 1:
+                            lp.setTitulo(nuevoValor);
+                            opcionValida = true;
+                        case 2:
+                            lp.setDescripcion(nuevoValor);
+                            opcionValida = true;
+                        case 3:
+                            lp.setObjetivos(nuevoValor);
+                            opcionValida = true;
+                        case 4:
+                            lp.setNivelDificultad(nuevoValor);
+                            opcionValida = true;
+                    }
+                    
+                    System.out.println("Atributo actualizado exitosamente.");
+                }
+            } catch (Exception e) {
+                System.out.println("Entrada no válida. Por favor, ingrese un número.");
+            }
+        }
     }
     
     public Actividad crearActividad(Scanner scanner) {
