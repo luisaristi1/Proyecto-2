@@ -500,6 +500,7 @@ public class ManejoPersistencia {
 			   
 			   String progresoPaths = "";
 			   String progresoActividades = "";
+			   String realizadas= "";
 			   
 			   HashMap<LearningPath, ProgresoPath> control = (HashMap<LearningPath, ProgresoPath>) estu.getProgresoPaths();
 			   ArrayList<ProgresoPath> progPath = (ArrayList<ProgresoPath>) control.values();	
@@ -508,31 +509,130 @@ public class ManejoPersistencia {
 			   
 			   for (ProgresoPath c: progPath) {
 				   String nombrePath = c.getLp().getTitulo();
-				   progresoPaths = progresoPaths + ", " + nombrePath;
+				   progresoPaths = progresoPaths + "," + nombrePath;}
 
 			       
-			       ArrayList<ProgresoActividad> progresoAct = (ArrayList<ProgresoActividad>) estu.getProgresosAct().values();
+			   ArrayList<ProgresoActividad> progresoAct = (ArrayList<ProgresoActividad>) estu.getProgresosAct().values();
 			       
-			       for (ProgresoActividad ca: progresoAct) {
-			    	   String miniCa = "";
-			    	   String nombreAct = ca.getActividad().getNombre();
-					   progresoActividades = progresoActividades + ", " + nombreAct;
-			    	}
-
+			   for (ProgresoActividad ca: progresoAct) {
+			    	String nombreAct = ca.getActividad().getNombre();
+					progresoActividades = progresoActividades + "," + nombreAct;
+			    }
+			   
+			   ArrayList<Actividad> realizada = (ArrayList<Actividad>) estu.getRealizadas();
+			   
+			   for (Actividad actRea: realizada) {
+				   String nombreAct = actRea.getNombre();
+				   realizadas = realizadas + "," + nombreAct;
+	
 				   
 			   }
+				   
+			   
 			   
 			   rta.add(nombre);
 			   rta.add(email);
 			   rta.add(clave);
 			   rta.add(progresoPaths);
 			   rta.add(progresoActividades);
+			   rta.add(realizadas);
+
 			   return rta;
 
 		   }
 
-	
+	    public Map<String, Estudiante> guardarEstudiante() {
+			// TODO Auto-generated method stub
+				String nombreCSV = "data/datosProfesores.csv";
+				   
+				   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+			           for (String llave: mapaEstudiantes.keySet()) {
+			        	   ArrayList<String> lineaPath = formatoEstudiante(mapaEstudiantes.get(llave));
+			        	   String line = String.join(";", lineaPath);
+			               writer.write(line);
+			               writer.newLine();
+			           }
+			      
+			           System.out.println("Se ha guardado exitosamente.");
+			           
+			       } catch (IOException e) {
+			           e.printStackTrace();
+			       }
+				   
+				   return mapaEstudiantes;
+		}
 	    
+	    
+	    public Map<String, Estudiante> cargarEstudiantes() {
+	        String nombreCSV = "data/datosEstudiantes.csv";
+
+	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	            String line;
+	            while ((line = br.readLine()) != null) {
+	                String[] values = line.split(";");
+	                String nombre = values[0];
+	                String email = values[1];
+	                String clave = values[2];
+
+	                // Crear el estudiante
+	                Estudiante estudiante = new Estudiante(nombre, email, clave);
+
+	                // Cargar progresoAct (Mapa <Actividad, ProgresoActividad>)
+	                String[] progresoActData = values[3].split(",");
+	                Map<Actividad, ProgresoActividad> progresoAct = new HashMap<>();
+	                for (String act : progresoActData) {
+	                    Actividad actividad = mapaActividades.get(act.trim());
+	                    if (actividad != null) {
+	                        ProgresoActividad progreso = new ProgresoActividad(actividad, estudiante); // Suponiendo que el constructor usa Actividad
+	                        progresoAct.put(actividad, progreso);
+	                    } else {
+	                        System.out.println("Advertencia: Actividad '" + act + "' no encontrada para el estudiante " + nombre);
+	                    }
+	                }
+	                estudiante.setProgresoAct(progresoAct);
+
+	                // Cargar progresoPaths (Mapa <LearningPath, ProgresoPath>)
+	                String[] progresoPathsData = values[4].split(",");
+	                Map<LearningPath, ProgresoPath> progresoPaths = new HashMap<>();
+	                List<LearningPath> lp = new ArrayList<>();
+	                
+	                for (String path : progresoPathsData) {
+	                    LearningPath learningPath = mapaPaths.get(path.trim());
+	                    if (learningPath != null) {
+	                        ProgresoPath progreso = new ProgresoPath(learningPath, null, estudiante); // Suponiendo que el constructor usa LearningPath
+	                        progresoPaths.put(learningPath, progreso);
+	                        lp.add(learningPath);
+	                    } else {
+	                        System.out.println("Advertencia: LearningPath '" + path + "' no encontrado para el estudiante " + nombre);
+	                    }
+	                }
+	                estudiante.setLP(lp);
+	                estudiante.setProgresoPaths(progresoPaths);
+
+	                // Cargar actividades realizadas
+	                String[] actividadesRealizadasData = values[5].split(",");
+	                List<Actividad> realizadas = new ArrayList<>();
+	                for (String act : actividadesRealizadasData) {
+	                    Actividad actividad = mapaActividades.get(act.trim());
+	                    if (actividad != null) {
+	                        realizadas.add(actividad);
+	                    } else {
+	                        System.out.println("Advertencia: Actividad realizada '" + act + "' no encontrada para el estudiante " + nombre);
+	                    }
+	                }
+	                estudiante.setRealizadas(realizadas);
+
+
+	                // Añadir estudiante al mapa
+	                mapaEstudiantes.put(estudiante.getNombre(), estudiante);
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
+	        System.out.println("Estudiantes cargados exitosamente.");
+	        return mapaEstudiantes;
+	    }
 	    
 	    
 	    
@@ -541,12 +641,15 @@ public class ManejoPersistencia {
 	    
 	 //FIN SECCION ESTUDIANTES   
 	    
-	private void guardarEstudiante() {
-			// TODO Auto-generated method stub
-			
-		}
+	    
+	
+	
+	
+	
 
 		//SECCION PROFESORES
+	    
+	    
 	    public Map<String, Profesor> crearProfesorData(String nombre, String correo, String contrasena){
 	    	Profesor profe = new Profesor(nombre, correo, contrasena);
 			mapaProfesores.put(profe.getNombre(), profe);
@@ -570,17 +673,100 @@ public class ManejoPersistencia {
 				   
 				   return mapaProfesores;
 		}
+	    public ArrayList<String> formatoProfesor(Profesor prof){
+	    	
+			   ArrayList<String> rta = new ArrayList<>(); 
+
+			   
+			   String nombre = prof.getNombre();
+			   String email = prof.getCorreo();
+			   String clave = prof.getContrasena();
+			   
+			   String lpCreados = "";
+			   
+			   ArrayList<LearningPath> path = (ArrayList<LearningPath>) prof.getLearningPathsCreados();	
+			   
+			   
+			   
+			   for (LearningPath c: path) {
+				   String nombrePath = c.getTitulo();
+				   lpCreados = lpCreados + ", " + nombrePath;
+
+			      }
+			   
+			   rta.add(nombre);
+			   rta.add(email);
+			   rta.add(clave);
+			   rta.add(lpCreados);
+			   return rta;
+			   
+			   
+			   
+			   }
 	    
-	    		   
 
 	
 			
-			private void guardarProfesor() {
+			public Map<String, Profesor> guardarProfesor() {
 			// TODO Auto-generated method stub
-			
+				String nombreCSV = "data/datosProfesores.csv";
+				   
+				   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+			           for (String llave: mapaProfesores.keySet()) {
+			        	   ArrayList<String> lineaPath = formatoProfesor(mapaProfesores.get(llave));
+			        	   String line = String.join(";", lineaPath);
+			               writer.write(line);
+			               writer.newLine();
+			           }
+			      
+			           System.out.println("Se ha guardado exitosamente.");
+			           
+			       } catch (IOException e) {
+			           e.printStackTrace();
+			       }
+				   
+				   return mapaProfesores;
 		}
 
-			
+			/**
+		     * Cargar Profesores desde el archivo CSV.
+		     */
+		    public Map<String, Profesor> cargarProfesores() {
+		        String nombreCSV = "data/datosUsuariosProfesores.csv";
+
+		        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+		            String line;
+		            while ((line = br.readLine()) != null) {
+		                String[] values = line.split(";");
+		                String nombre = values[0];
+		                String email = values[1];
+		                String clave = values[2];
+		                String lpCreados = values[3];
+		                // Crear profesor y añadir al mapa
+		                Profesor profesor = new Profesor(nombre, email, clave);
+		             // Asociar LearningPaths creados
+		                String[] titulosLP = lpCreados.split(",");
+		                List<LearningPath> listaLPCreados = new ArrayList<>();
+		                for (String titulo : titulosLP) {
+		                    LearningPath lp = mapaPaths.get(titulo.trim());
+		                    if (lp != null) {
+		                        listaLPCreados.add(lp);
+		                    } else {
+		                        System.out.println("Advertencia: LearningPath '" + titulo + "' no encontrado para el profesor " + nombre);
+		                    }
+		                }
+		                profesor.setLearningPathsCreados(listaLPCreados);
+
+		                // Añadir profesor al mapa
+		                mapaProfesores.put(profesor.getNombre(), profesor);
+		            }
+		        } catch (IOException e) {
+		            e.printStackTrace();
+		        }
+
+		        System.out.println("Profesores cargados exitosamente.");
+		        return mapaProfesores;
+		    }
 
 			
 			 //formato en string de cada usuario
@@ -588,148 +774,9 @@ public class ManejoPersistencia {
 				
 				
 				//Guardar usuarios
-				   public Map<String, Usuario> guardarUsuarios(int tipo){
-					   String nombreCSV = "data/datosUsuarios.csv";
-					   
-					   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
-				           for (String llave: mapaUsuarios.keySet()) {
-				        	   ArrayList<String> lineaPath = formatoUsuario(mapaUsuarios.get(llave), tipo);
-				        	   String line = String.join(";", lineaPath);
-				               writer.write(line);
-				               writer.newLine();
-				           }
-				      
-				           System.out.println("Se ha guardado exitosamente.");
-				           
-				       } catch (IOException e) {
-				           e.printStackTrace();
-				       }
-					   
-					   return mapaUsuarios;
-				   }
-			
 				   
-				 //Se lee el archivo y se crea el mapa de usuarios
-					public Map<String, Usuario> crearMapaUsuarios(){
-						String nombreCSV = "data/datosUsuarios.csv";
-						
-						long milisegundos = 1636627200000L; //para inicializar date
-					       Date fechaInicio = new Date(milisegundos);
-					       Date fechaFinalizacion = new Date(milisegundos);
-					       Date fechaCompletar = new Date(milisegundos);
-						
-						try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
-				            String line;
-				            while ((line = br.readLine()) != null) {
-				                String[] values = line.split(";");
-				                
-				                int tipo = Integer.parseInt(values[0]);
-				                if (tipo == 1) {
-				                	String nombre = values[1];
-				                	String email = values[2];
-				                	String clave = values[3];
-				                	
-				                	Profesor profesor = new Profesor(nombre, email, clave);
-				                	mapaUsuarios.put(profesor.getNombre(), profesor);
-				                }
-				                else if (tipo == 2) {
-				                	String nombre = values[1];
-				                	String email = values[2];
-				                	String clave = values[3];
-				                	
-				                	ArrayList<ControlPath> controlPaths = new ArrayList<>();
-				                	
-				                	String[] lineaControlPaths = values[4].split("*");
-				                	for (String cp: lineaControlPaths) {
-				                		String[] atributosControlPath = cp.split("$");
-				                		String nombrePath = atributosControlPath[0];
-				                		Boolean enCurso = Boolean.parseBoolean(atributosControlPath[1]);
-				                		
-				                		SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy");
-						                String f = atributosControlPath[2];
-				                		
-						                try {
-							     			fechaInicio = formato.parse(f);
-							     		} catch (ParseException e) {
-							     			e.printStackTrace();
-							     		}
-						                
-						                String fa = atributosControlPath[3];
-				                		
-						                try {
-							     			fechaFinalizacion = formato.parse(fa);
-							     		} catch (ParseException e) {
-							     			e.printStackTrace();
-							     		}
-						                
-						                int totalActividades = Integer.parseInt(atributosControlPath[4]);
-						                int actividadesCompletadas = Integer.parseInt(atributosControlPath[5]);
-						                float progreso = Float.parseFloat(atributosControlPath[6]);
-						                
-						                ArrayList<ControlActividad> actividades = new ArrayList<>();
-						                
-						                String[] controlesActividad = atributosControlPath[7].split("/");
-						                
-						                for (String lineaControlActividad: controlesActividad) {
-						                	String[] atributosActividad = lineaControlActividad.split(",");
-						                	
-						                	String nombreAc = atributosActividad[0];
-						                	String estadoAc = atributosActividad[1];
-						                	
-						                	String fc = atributosActividad[2];
-					                		
-							                try {
-								     			fechaCompletar = formato.parse(fc);
-								     		} catch (ParseException e) {
-								     			e.printStackTrace();
-								     		}
-						                	
-						                	float tiempoDedicadoAc = Float.parseFloat(atributosActividad[3]);
-						                	float tasaExitoFAc = Float.parseFloat(atributosActividad[4]);
-						                	float calificacionAc = Float.parseFloat(atributosActividad[5]);
-						                	
-						                	String medioEntregaAc = atributosActividad[6];
-						                	
-						                	ControlActividad controlActividadLocal = new ControlActividad(nombreAc, medioEntregaAc);
-						                	controlActividadLocal.setEstado(estadoAc);
-						                	controlActividadLocal.setFechaCompletar(fechaCompletar);
-						                	controlActividadLocal.setTiempoDedicado(tiempoDedicadoAc);
-						                	controlActividadLocal.setTasaExitoFracaso(tasaExitoFAc);
-						                	controlActividadLocal.setCalificacion(calificacionAc);
-						                	controlActividadLocal.setMedioEntrega(medioEntregaAc);
-						                	
-						                	actividades.add(controlActividadLocal);
-						                	
-						                }
-						                
-						                ControlPath controlPathLocal = new ControlPath(nombrePath, fechaInicio, fechaFinalizacion,
-						                		totalActividades, progreso);
-						                controlPathLocal.setEnCurso(enCurso);
-						                controlPathLocal.setActividadesCompletadas(actividadesCompletadas);
-						                controlPathLocal.setActividades(actividades);
-						                
-						                controlPaths.add(controlPathLocal);
-						                
-				                	}
-				                	
-				                	Estudiante estudiante = new Estudiante(nombre, email, clave);
-				                	estudiante.setControlPaths(controlPaths);
-				                	
-				                	mapaUsuarios.put(estudiante.getNombre(), estudiante);
-				                	
-				                	
-				                }
-				              
-				                
-				            }
-				        } catch (IOException e) {
-				            e.printStackTrace();
-				        }
-						
-						System.out.println("Los usuarios se han cargado exitosamente.");
-						
-						return mapaUsuarios;
-					}	   
+			
+  
 				   
 
 	//FIN SECCION PARA USUARIOS

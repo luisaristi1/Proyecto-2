@@ -41,6 +41,22 @@ public class Estudiante extends Usuario {
 	public List<LearningPath> getLearningPathsInscritos() {
 		return learningPathsInscritos;
 	}
+	public List<Actividad> getRealizadas(){
+		return realizadas;
+	}
+	public void setProgresoAct(Map<Actividad, ProgresoActividad> progresoAct) {
+		this.progresosAct = progresoAct;
+	}
+	public void setLP(List<LearningPath> lp) {
+		this.learningPathsInscritos = lp;
+	}
+	
+	public void setProgresoPaths(Map<LearningPath, ProgresoPath> progresoPath) {
+		this.progresoPaths = progresoPath;
+	}
+	public void setRealizadas(List<Actividad> actividades) {
+		this.realizadas = actividades;
+	}
 
 	//Metodos
 	

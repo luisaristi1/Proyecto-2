@@ -569,6 +569,12 @@ public class Profesor extends Usuario {
 			System.out.println("No tiene los permisos para calificar esta actividad.");
 		}
 	}
+
+	public void setLearningPathsCreados(List<LearningPath> listaLPCreados) {
+		//Para evitar en la persistencia cada vez que se cree un profesor al iniciar la consola entonces
+		// que todos sus learningpaths asociados se adjunten de una vez
+		this.learningPathsCreados = listaLPCreados;
+	}
 	
 
 }
