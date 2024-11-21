@@ -1,6 +1,7 @@
 package proyecto;
 
 import java.util.Date;
+import Persistencia.ManejoPersistencia;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class Estudiante extends Usuario {
 	private Map<Actividad, ProgresoActividad> progresosAct;
 	private Map<LearningPath, ProgresoPath> progresoPaths;
 	private List<Actividad> realizadas;
+	private Actividad actividadActiva;
 	private boolean actividadEnProgreso;
 	//Constructor
 	public Estudiante(String nombre, String correo, String contrasena) {
@@ -25,6 +27,7 @@ public class Estudiante extends Usuario {
 		this.progresosAct = new HashMap<Actividad, ProgresoActividad>();
 		this.progresoPaths = new HashMap<LearningPath, ProgresoPath>();
 		this.actividadEnProgreso = false;
+		this.actividadActiva = null;
 		this.realizadas = new ArrayList<>();
 		// TODO Auto-generated constructor stub
 	}
@@ -41,7 +44,22 @@ public class Estudiante extends Usuario {
 	public List<LearningPath> getLearningPathsInscritos() {
 		return learningPathsInscritos;
 	}
-
+	public List<Actividad> getRealizadas(){
+		return realizadas;
+	}
+	public void setProgresoAct(Map<Actividad, ProgresoActividad> progresoAct) {
+		this.progresosAct = progresoAct;
+	}
+	public void setLP(List<LearningPath> lp) {
+		this.learningPathsInscritos = lp;
+	}
+	
+	public void setProgresoPaths(Map<LearningPath, ProgresoPath> progresoPath) {
+		this.progresoPaths = progresoPath;
+	}
+	public void setRealizadas(List<Actividad> actividades) {
+		this.realizadas = actividades;
+	}
 	//Metodos
 	
 	@Override
