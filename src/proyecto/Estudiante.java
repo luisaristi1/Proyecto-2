@@ -1,7 +1,6 @@
 package proyecto;
 
 import java.util.Date;
-import Persistencia.ManejoPersistencia;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.ArrayList;
@@ -9,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+
+import Persistencia.ManejoPersistencia;
 
 public class Estudiante extends Usuario {
 	
@@ -18,7 +19,6 @@ public class Estudiante extends Usuario {
 	private Map<Actividad, ProgresoActividad> progresosAct;
 	private Map<LearningPath, ProgresoPath> progresoPaths;
 	private List<Actividad> realizadas;
-	private Actividad actividadActiva;
 	private boolean actividadEnProgreso;
 	//Constructor
 	public Estudiante(String nombre, String correo, String contrasena) {
@@ -27,7 +27,6 @@ public class Estudiante extends Usuario {
 		this.progresosAct = new HashMap<Actividad, ProgresoActividad>();
 		this.progresoPaths = new HashMap<LearningPath, ProgresoPath>();
 		this.actividadEnProgreso = false;
-		this.actividadActiva = null;
 		this.realizadas = new ArrayList<>();
 		// TODO Auto-generated constructor stub
 	}
@@ -88,63 +87,64 @@ public class Estudiante extends Usuario {
 	}
 
 	
-	
-    public LearningPath inscribirseEnLearningPath(Scanner scanner, Registro sistema) {
-    	
-    	LearningPath rta = null;
-    	List<LearningPath> catalogo = sistema.getPaths();
-    	
-    	if (catalogo.isEmpty()) {
-            System.out.println("No hay Learning Paths disponibles en este momento.");
-            return null;
-        }
-    	
-    	//Mostrar catalogo
-        System.out.println("Learning Paths disponibles:");
-        for (int i = 0; i < catalogo.size(); i++) {
-            LearningPath lp = catalogo.get(i);
-            System.out.println((i + 1) + ". " + lp.getTitulo() + " - " + lp.getDescripcion());
-        }
-        
-        //Seleccion de opcion
-        System.out.print("Ingrese el número del Learning Path al que desea inscribirse: ");
-        
-        //validacion
-        while (true) {
-            try {
-            	int seleccion = Integer.parseInt(scanner.nextLine());
-                if (seleccion < 1 || seleccion > catalogo.size()) {
-                	System.out.println("Selección no válida. Por favor, intente nuevamente.");
-                } else {
-                	rta = catalogo.get(seleccion - 1);
-                	inscripcion(rta);
-                    break;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Entrada no válida. Por favor, ingrese un número.");
-    	        }
-        }
-        return rta;
-    }
-    		 
-    public void inscripcion(LearningPath learningPath) {
+	public LearningPath inscribirseEnLearningPath(Scanner scanner, ManejoPersistencia persistencia) {
+	    LearningPath rta = null;
+	    List<LearningPath> catalogo = new ArrayList<>(persistencia.getMapaPaths().values());
+	    
+	    if (catalogo.isEmpty()) {
+	        System.out.println("No hay Learning Paths disponibles en este momento.");
+	        return null;
+	    }
+	    
+	    // Mostrar catálogo
+	    System.out.println("Learning Paths disponibles:");
+	    for (int i = 0; i < catalogo.size(); i++) {
+	        LearningPath lp = catalogo.get(i);
+	        System.out.println((i + 1) + ". " + lp.getTitulo() + " - " + lp.getDescripcion());
+	    }
+	    
+	    // Selección de opción
+	    System.out.print("Ingrese el número del Learning Path al que desea inscribirse: ");
+	    
+	    while (true) {
+	        try {
+	            int seleccion = Integer.parseInt(scanner.nextLine());
+	            if (seleccion < 1 || seleccion > catalogo.size()) {
+	                System.out.println("Selección no válida. Por favor, intente nuevamente.");
+	            } else {
+	                rta = catalogo.get(seleccion - 1);
+	                inscripcion(rta, persistencia); // Actualiza inscripciones con persistencia
+	                break;
+	            }
+	        } catch (NumberFormatException e) {
+	            System.out.println("Entrada no válida. Por favor, ingrese un número.");
+	        }
+	    }
+	    return rta;
+	}
 
-        if (!learningPathsInscritos.contains(learningPath)) {
-            learningPathsInscritos.add(learningPath);
-            System.out.println("Te has inscrito exitosamente en el Learning Path: " + learningPath.getTitulo());
-			learningPath.mostrarEstructura();
-			ProgresoPath avance = new ProgresoPath(learningPath, new Date(), this);
-			progresoPaths.put(learningPath, avance);
-            for (Actividad actividad : learningPath.getActividades()) {
-                ProgresoActividad progreso = new ProgresoActividad(actividad,this);
-                progresosAct.put(actividad, progreso);
-            }
-            
-        } else {
-            System.out.println("Ya estás inscrito en este Learning Path.");
-        }
-    }
-    
+	public void inscripcion(LearningPath learningPath, ManejoPersistencia persistencia) {
+	    if (!learningPathsInscritos.contains(learningPath)) {
+	        learningPathsInscritos.add(learningPath);
+	        System.out.println("Te has inscrito exitosamente en el Learning Path: " + learningPath.getTitulo());
+	        learningPath.mostrarEstructura();
+	        
+	        ProgresoPath avance = new ProgresoPath(learningPath, new Date(), this);
+	        progresoPaths.put(learningPath, avance);
+	        
+	        // Guardar progreso en persistencia
+	        persistencia.crearProgresoPathData(avance);
+	        
+	        for (Actividad actividad : learningPath.getActividades()) {
+	            ProgresoActividad progreso = new ProgresoActividad(actividad, this);
+	            progresosAct.put(actividad, progreso);
+	            persistencia.guardarProgresoActividad(); // Guardar progreso de actividades
+	        }
+	    } else {
+	        System.out.println("Ya estás inscrito en este Learning Path.");
+	    }
+	}
+
     public Actividad seleccionarActividad(Scanner scanner, LearningPath learningPath){
     	
     	ProgresoPath path = progresoPaths.get(learningPath);

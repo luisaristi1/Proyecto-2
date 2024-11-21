@@ -174,7 +174,7 @@ public class ManejoPersistencia {
 	   
 	//Guardar actividades
 	   public Map<String, Actividad> guardarActividades(){
-		   String nombreCSV = "data/datosActividades.csv";
+		   String nombreCSV = "datos/datosActividades.csv";
 		   
 		   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
 	           for (String llave: mapaActividades.keySet()) {
@@ -248,7 +248,7 @@ public class ManejoPersistencia {
 	//Se lee el archivo y se crea el mapa de actividades
 
 	    public Map<String, Actividad> crearMapaActividades(Profesor profesor) {
-	        String nombreCSV = "data/datosActividades.csv";
+	        String nombreCSV = "datos/datosActividades.csv";
 	        Scanner scanner = new Scanner(System.in);
 
 	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
@@ -391,7 +391,7 @@ public class ManejoPersistencia {
 	     * Guardar el mapa de LearningPaths en un archivo CSV.
 	     */
 	    public Map<String, LearningPath> guardarPaths() {
-	        String nombreCSV = "data/datosPaths.csv";
+	        String nombreCSV = "datos/datosPaths.csv";
 
 	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
 	            for (String llave : mapaPaths.keySet()) {
@@ -411,8 +411,8 @@ public class ManejoPersistencia {
 	    /**
 	     * Leer un archivo CSV y crear el mapa de LearningPaths.
 	     */
-	    public Map<String, LearningPath> crearMapaPaths() {
-	        String nombreCSV = "data/datosPaths.csv";
+	    public Map<String, LearningPath> cargarLearningPaths() {
+	        String nombreCSV = "datos/datosPaths.csv";
 
 	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
 	            String line;
@@ -545,7 +545,7 @@ public class ManejoPersistencia {
 
 	    public Map<String, Estudiante> guardarEstudiante() {
 			// TODO Auto-generated method stub
-				String nombreCSV = "data/datosProfesores.csv";
+				String nombreCSV = "datos/datosProfesores.csv";
 				   
 				   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
 			           for (String llave: mapaEstudiantes.keySet()) {
@@ -566,7 +566,7 @@ public class ManejoPersistencia {
 	    
 	    
 	    public Map<String, Estudiante> cargarEstudiantes() {
-	        String nombreCSV = "data/datosEstudiantes.csv";
+	        String nombreCSV = "datos/datosEstudiantes.csv";
 
 	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
 	            String line;
@@ -821,7 +821,7 @@ public class ManejoPersistencia {
 		    }
 
 		    public Map<String, ProgresoPath> guardarProgresoPath() {
-		        String nombreCSV = "data/datosProgresoPath.csv";
+		        String nombreCSV = "datos/datosProgresoPath.csv";
 
 		        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
 		            for (ProgresoPath progreso : mapaProgresoPath.values()) {
@@ -841,7 +841,7 @@ public class ManejoPersistencia {
 
 
 		    public Map<String, ProgresoPath> cargarProgresoPaths() {
-		        String nombreCSV = "data/datosProgresoPaths.csv";
+		        String nombreCSV = "datos/datosProgresoPaths.csv";
 
 		        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
 		            String line;
@@ -939,7 +939,7 @@ public class ManejoPersistencia {
 		        return rta;
 		    }
 		    public Map<String, ProgresoActividad> guardarProgresoActividad() {
-		        String nombreCSV = "data/datosProgresoActividades.csv";
+		        String nombreCSV = "datos/datosProgresoActividades.csv";
 
 		        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
 		            for (ProgresoActividad progreso : mapaProgresoActividad.values()) {
@@ -957,7 +957,7 @@ public class ManejoPersistencia {
 		        return mapaProgresoActividad;
 		    }
 		    public Map<String, ProgresoActividad> cargarProgresoActividades() {
-		        String nombreCSV = "data/datosProgresoActividades.csv";
+		        String nombreCSV = "datos/datosProgresoActividades.csv";
 
 		        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
 		            String line;
@@ -1006,6 +1006,13 @@ public class ManejoPersistencia {
 		        System.out.println("Progresos de Actividades cargados exitosamente.");
 		        return mapaProgresoActividad;
 		    }
+
+			public Map<String, LearningPath> getMapaPaths() {
+				// TODO Auto-generated method stub
+				return mapaPaths;
+			}
+
+			
 
 
 

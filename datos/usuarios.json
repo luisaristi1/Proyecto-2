@@ -28,5 +28,17 @@
     "correo": "m.guzmann",
     "tipoUsuario": "Estudiante",
     "nombre": "Masiel"
+  },
+  {
+    "password": "luan0415",
+    "correo": "luis@gmail.com",
+    "tipoUsuario": "Estudiante",
+    "nombre": "LUIS"
+  },
+  {
+    "password": "juana",
+    "correo": "ml.vega@gmil.com",
+    "tipoUsuario": "Estudiante",
+    "nombre": "Vega"
   }
 ]}
