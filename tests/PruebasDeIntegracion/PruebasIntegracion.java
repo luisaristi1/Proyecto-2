@@ -1,10 +1,13 @@
 package PruebasDeIntegracion;
+import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import proyecto.Actividad;
 import proyecto.Estudiante;
+import proyecto.LearningPath;
 import proyecto.Profesor;
 import proyecto.Registro;
 
@@ -15,13 +18,9 @@ class PruebasIntegracion {
 	Profesor p2 = new Profesor("Laura Diaz", "l.diaz@gmail.com", "12345678");
 	Profesor p3 = new Profesor("Manuel Villamil", "m.villamil@gmail.com", "87654321");
 	
-	
-	
-	
 	Estudiante e1 = new Estudiante("Natalia Perez", "n.perez@gmail.com", "12345678");
 	Estudiante e2 = new Estudiante("Julian Tellez", "j.tellez@gmail.com", "09876544");
 	Estudiante e3 = new Estudiante("Claudia Montero", "n.perez@gmail.com", "12345678");
-	
 	
 	
 	//registrar profesor
@@ -104,6 +103,27 @@ class PruebasIntegracion {
 				}
 				
 	//RUTAS DE APRENDIZAJE
+				//Crear paths con actividades validas.
+				@Test
+				void test9() {
+					LearningPath lp1 = p1.crearLearningPath("Java Programming", 
+				            "Aprende los fundamentos de Java", 
+				            "Dominar los conceptos de java y POO\nAprender un nuevo lenguaje", 
+				            "Intermedio",8, registro);
+					
+					p1.editarAtributosPath(lp1);
+					
+					Boolean rta = p1.verificarPathExistente(lp1);
+					
+					assertEquals(true, rta);
+					
+				}	
+				
+				
+				
+				
+				
+				
 				
 	
 				
