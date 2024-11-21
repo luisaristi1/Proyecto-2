@@ -134,7 +134,6 @@ public class Estudiante extends Usuario {
             System.out.println("Te has inscrito exitosamente en el Learning Path: " + learningPath.getTitulo());
 			learningPath.mostrarEstructura();
 			ProgresoPath avance = new ProgresoPath(learningPath, new Date(), this);
-			crearProgresoPathData(avance);
 			progresoPaths.put(learningPath, avance);
             for (Actividad actividad : learningPath.getActividades()) {
                 ProgresoActividad progreso = new ProgresoActividad(actividad,this);

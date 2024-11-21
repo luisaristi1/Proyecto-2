@@ -57,6 +57,14 @@ import java.util.concurrent.TimeUnit;
 		return fechaFin;
 	}
 	
+	public void setCompletado(boolean completed) {
+		this.completada = completed;
+	}
+	
+	public void setTiempoDedicado(long tiempodedicado) {
+		this.tiempoDedicado = tiempodedicado;
+	}
+	
 	public void setFechaFin(Date fechaInicio) {
 		this.fechaInicio = fechaInicio;
 	}
