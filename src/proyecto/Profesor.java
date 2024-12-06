@@ -1,13 +1,14 @@
 package proyecto;
 
 import java.util.ArrayList;
-import Persistencia.ManejoPersistencia;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+
+import Persistencia.ManejoPersistencia;
 
 public class Profesor extends Usuario {
 	
@@ -79,12 +80,12 @@ public class Profesor extends Usuario {
 		return rta;
 	}
 	
-    public LearningPath crearLearningPath(String titulo, String descripcion, String objetivos, String nivelDificultad, int duracionEstimada, Registro sistema) {
+    public LearningPath crearLearningPath(String titulo, String descripcion, String objetivos, String nivelDificultad, int duracionEstimada, ManejoPersistencia sistema) {
     	
     	LearningPath nuevoLP = new LearningPath(titulo, descripcion, objetivos, nivelDificultad, this, duracionEstimada);
         learningPathsCreados.add(nuevoLP);
         System.out.println("Learning Path creado exitosamente.");
-        sistema.agregarPaths(nuevoLP);
+        sistema.crearPathData(nuevoLP);
         return nuevoLP;
     }
     

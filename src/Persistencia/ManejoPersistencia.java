@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -312,6 +313,17 @@ public class ManejoPersistencia {
 	    public LearningPath buscarPath(String nombre) {
 	        return mapaPaths.get(nombre);
 	    }
+	    
+	    public ArrayList<String> mostrarPaths(){
+	    	ArrayList<LearningPath> lps = (ArrayList<LearningPath>) mapaPaths.values();
+	    	ArrayList<String> nombrespaths = new ArrayList<>();
+	    	for (LearningPath lp: lps) {
+	    		nombrespaths.add(lp.getTitulo());
+	    	}
+	    	
+	    			
+	    	return nombrespaths;
+	    	}
 
 	    /**
 	     * Modificar un LearningPath según un parámetro específico.
@@ -418,6 +430,11 @@ public class ManejoPersistencia {
 	            String line;
 	            while ((line = br.readLine()) != null) {
 	                String[] values = line.split(";");
+	                if (values.length < 8) {
+	                    System.out.println("Error: Línea con formato incorrecto en el archivo de Learning Paths.");
+	                    continue; // Skip this line and move to the next one
+	                }
+
 	                String titulo = values[0];
 	                String descripcion = values[1];
 	                String objetivos = values[2];
@@ -430,23 +447,30 @@ public class ManejoPersistencia {
 	                // Profesor creador
 	                String nombreCreador = values[7];
 	                Profesor creador = mapaProfesores.get(nombreCreador);
+	                if (creador == null) {
+	                    System.out.println("Advertencia: Profesor '" + nombreCreador + "' no encontrado.");
+	                    continue;
+	                }
 
 	                // Crear el LearningPath
 	                LearningPath lp = new LearningPath(titulo, descripcion, objetivos, nivelDificultad, creador, duracionEstimada);
 	                lp.setFechaCreacion(fechaCreacion);
 	                lp.setFechaModificacion(fechaModificacion);
 
-	                // Procesar actividades
-	                List<Actividad> actividades = new ArrayList<>();
-	                String[] nombresActividades = values[8].split(",");
-	                for (String nombreActividad : nombresActividades) {
-	                    Actividad actividad = cargarActividad(nombreActividad);
-	                    if (actividad != null) actividades.add(actividad);
+	                // Procesar actividades (if present)
+	                if (values.length > 8) {
+	                    List<Actividad> actividades = new ArrayList<>();
+	                    String[] nombresActividades = values[8].split(",");
+	                    for (String nombreActividad : nombresActividades) {
+	                        Actividad actividad = cargarActividad(nombreActividad.trim());
+	                        if (actividad != null) {
+	                            actividades.add(actividad);
+	                        } else {
+	                            System.out.println("Advertencia: Actividad '" + nombreActividad + "' no encontrada.");
+	                        }
+	                    }
+	                    lp.setActividades(actividades);
 	                }
-	                lp.setActividades(actividades);
-
-	                // Procesar reseñas
-	               
 
 	                mapaPaths.put(lp.getTitulo(), lp);
 	            }
@@ -457,6 +481,7 @@ public class ManejoPersistencia {
 	        System.out.println("LearningPaths cargados exitosamente.");
 	        return mapaPaths;
 	    }
+
 
 	    /**
 	     * Cargar una actividad desde el mapa de actividades.
@@ -471,164 +496,182 @@ public class ManejoPersistencia {
 
 		
 	//SECCION PARA ESTUDIANTES
-	    public Map<String, Estudiante> crearEstudianteData(String nombre, String correo, String contrasena){
-	    	Estudiante estu = new Estudiante(nombre, correo, contrasena);
-			mapaEstudiantes.put(estu.getNombre(), estu);
-			guardarEstudiante();
-			return mapaEstudiantes;
+	 // SECCION ESTUDIANTES
+
+	    public Map<String, Estudiante> crearEstudianteData(String nombre, String correo, String contrasena) {
+	        Estudiante estu = new Estudiante(nombre, correo, contrasena);
+	        mapaEstudiantes.put(estu.getCorreo(), estu); // Use correo as the key
+	        guardarEstudiante();
+	        return mapaEstudiantes;
 	    }
-	    
-	    public Estudiante buscarEstu(String nombre) {
-			   Estudiante estu = mapaEstudiantes.get(nombre);
-			   return estu;
-		   }
-	    
-	    public Map<String, Estudiante> modificarEstudiante( String modificar, String nombreuser){
-			   Estudiante estu =  mapaEstudiantes.get(nombreuser);
-			   estu.setContrasena(modificar);
-			   
-			   guardarEstudiante();
-			   
-			   return mapaEstudiantes;
-	}
-	    public ArrayList<String> formatoEstudiante(Estudiante estu){
-	    	
-			   ArrayList<String> rta = new ArrayList<>(); 
 
-			   
-			   String nombre = estu.getNombre();
-			   String email = estu.getCorreo();
-			   String clave = estu.getContrasena();
-			   
-			   String progresoPaths = "";
-			   String progresoActividades = "";
-			   String realizadas= "";
-			   
-			   HashMap<LearningPath, ProgresoPath> control = (HashMap<LearningPath, ProgresoPath>) estu.getProgresoPaths();
-			   ArrayList<ProgresoPath> progPath = (ArrayList<ProgresoPath>) control.values();	
-			   
-			   
-			   
-			   for (ProgresoPath c: progPath) {
-				   String nombrePath = c.getLp().getTitulo();
-				   progresoPaths = progresoPaths + "," + nombrePath;}
+	    // Buscar un estudiante por correo
+	    public Estudiante buscarEstu(String correo) {
+	        return mapaEstudiantes.get(correo); // Use correo as the key
+	    }
 
-			       
-			   ArrayList<ProgresoActividad> progresoAct = (ArrayList<ProgresoActividad>) estu.getProgresosAct().values();
-			       
-			   for (ProgresoActividad ca: progresoAct) {
-			    	String nombreAct = ca.getActividad().getNombre();
-					progresoActividades = progresoActividades + "," + nombreAct;
-			    }
-			   
-			   ArrayList<Actividad> realizada = (ArrayList<Actividad>) estu.getRealizadas();
-			   
-			   for (Actividad actRea: realizada) {
-				   String nombreAct = actRea.getNombre();
-				   realizadas = realizadas + "," + nombreAct;
-	
-				   
-			   }
-				   
-			   
-			   
-			   rta.add(nombre);
-			   rta.add(email);
-			   rta.add(clave);
-			   rta.add(progresoPaths);
-			   rta.add(progresoActividades);
-			   rta.add(realizadas);
+	    // Modificar un estudiante por correo
+	    public Map<String, Estudiante> modificarEstudiante(String modificar, String correo) {
+	        Estudiante estu = mapaEstudiantes.get(correo); // Use correo as the key
+	        if (estu != null) {
+	            estu.setContrasena(modificar);
+	            guardarEstudiante();
+	        } else {
+	            System.out.println("Error: Estudiante con el correo '" + correo + "' no encontrado.");
+	        }
+	        return mapaEstudiantes;
+	    }
 
-			   return rta;
+	    // Formato de estudiante para guardar
+	    public ArrayList<String> formatoEstudiante(Estudiante estu) {
+	        ArrayList<String> rta = new ArrayList<>();
 
-		   }
+	        String nombre = estu.getNombre();
+	        String email = estu.getCorreo();
+	        String clave = estu.getContrasena();
 
+	        String progresoPaths = "";
+	        String progresoActividades = "";
+	        String realizadas = "";
+
+	        // Convert progresoPaths to String
+	        Collection<ProgresoPath> progPathsCollection = estu.getProgresoPaths().values();
+	        for (ProgresoPath progPath : progPathsCollection) {
+	            String nombrePath = progPath.getLp().getTitulo();
+	            progresoPaths += "," + nombrePath;
+	        }
+
+	        // Convert progresoAct to String
+	        Collection<ProgresoActividad> progresoActCollection = estu.getProgresosAct().values();
+	        for (ProgresoActividad progresoAct : progresoActCollection) {
+	            String nombreAct = progresoAct.getActividad().getNombre();
+	            progresoActividades += "," + nombreAct;
+	        }
+
+	        // Process actividades realizadas
+	        List<Actividad> realizadasList = estu.getRealizadas();
+	        for (Actividad actRea : realizadasList) {
+	            String nombreAct = actRea.getNombre();
+	            realizadas += "," + nombreAct;
+	        }
+
+	        // Add all fields to the return list
+	        rta.add(nombre);
+	        rta.add(email);
+	        rta.add(clave);
+	        rta.add(progresoPaths.isEmpty() ? "" : progresoPaths.substring(1)); // Remove leading comma
+	        rta.add(progresoActividades.isEmpty() ? "" : progresoActividades.substring(1)); // Remove leading comma
+	        rta.add(realizadas.isEmpty() ? "" : realizadas.substring(1)); // Remove leading comma
+
+	        return rta;
+	    }
+
+	    // Guardar estudiantes
 	    public Map<String, Estudiante> guardarEstudiante() {
-			// TODO Auto-generated method stub
-				String nombreCSV = "datos/datosProfesores.csv";
-				   
-				   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
-			           for (String llave: mapaEstudiantes.keySet()) {
-			        	   ArrayList<String> lineaPath = formatoEstudiante(mapaEstudiantes.get(llave));
-			        	   String line = String.join(";", lineaPath);
-			               writer.write(line);
-			               writer.newLine();
-			           }
-			      
-			           System.out.println("Se ha guardado exitosamente.");
-			           
-			       } catch (IOException e) {
-			           e.printStackTrace();
-			       }
-				   
-				   return mapaEstudiantes;
-		}
-	    
-	    
+	        String nombreCSV = "datos/datosEstudiantes.csv";
+
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+	            for (Estudiante estudiante : mapaEstudiantes.values()) {
+	                ArrayList<String> lineaEstudiante = formatoEstudiante(estudiante);
+	                String line = String.join(";", lineaEstudiante);
+	                writer.write(line);
+	                writer.newLine();
+	            }
+
+	            System.out.println("Estudiantes guardados exitosamente.");
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
+	        return mapaEstudiantes;
+	    }
+
+	    // Cargar estudiantes desde el archivo CSV
 	    public Map<String, Estudiante> cargarEstudiantes() {
 	        String nombreCSV = "datos/datosEstudiantes.csv";
 
-	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
-	            String line;
-	            while ((line = br.readLine()) != null) {
-	                String[] values = line.split(";");
-	                String nombre = values[0];
-	                String email = values[1];
-	                String clave = values[2];
+	        try {
+	            // Check if the file exists, create it if not
+	            java.io.File file = new java.io.File(nombreCSV);
+	            if (!file.exists()) {
+	                System.out.println("Archivo 'datosEstudiantes.csv' no encontrado. Creando archivo vacío...");
+	                file.getParentFile().mkdirs(); // Create directories if they don't exist
+	                file.createNewFile(); // Create the file
+	                return mapaEstudiantes; // Return empty map if no data exists
+	            }
 
-	                // Crear el estudiante
-	                Estudiante estudiante = new Estudiante(nombre, email, clave);
-
-	                // Cargar progresoAct (Mapa <Actividad, ProgresoActividad>)
-	                String[] progresoActData = values[3].split(",");
-	                Map<Actividad, ProgresoActividad> progresoAct = new HashMap<>();
-	                for (String act : progresoActData) {
-	                    Actividad actividad = mapaActividades.get(act.trim());
-	                    if (actividad != null) {
-		                    String llave = estudiante.getNombre()+"_"+actividad.getNombre();
-	                        ProgresoActividad progreso = mapaProgresoActividad.get(llave); // Suponiendo que el constructor usa Actividad
-	                        progresoAct.put(actividad, progreso);
-	                    } else {
-	                        System.out.println("Advertencia: Actividad '" + act + "' no encontrada para el estudiante " + nombre);
+	            try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	                String line;
+	                while ((line = br.readLine()) != null) {
+	                    String[] values = line.split(";");
+	                    if (values.length < 6) { 
+	                        // Skip lines that don't have enough data
+	                        System.out.println("Línea malformada, omitiendo: " + line);
+	                        continue;
 	                    }
-	                }
-	                estudiante.setProgresoAct(progresoAct);
 
-	                // Cargar progresoPaths (Mapa <LearningPath, ProgresoPath>)
-	                String[] progresoPathsData = values[4].split(",");
-	                Map<LearningPath, ProgresoPath> progresoPaths = new HashMap<>();
-	                List<LearningPath> lp = new ArrayList<>();
-	                
-	                for (String path : progresoPathsData) {
-	                    LearningPath learningPath = mapaPaths.get(path.trim());
-	                    if (learningPath != null) {
-		                    String llaveLP = estudiante.getNombre()+"_"+learningPath.getTitulo();
-	                        ProgresoPath progreso = mapaProgresoPath.get(llaveLP); // Suponiendo que el constructor usa LearningPath
-	                        progresoPaths.put(learningPath, progreso);
-	                        lp.add(learningPath);
-	                    } else {
-	                        System.out.println("Advertencia: LearningPath '" + path + "' no encontrado para el estudiante " + nombre);
+	                    String nombre = values[0];
+	                    String email = values[1];
+	                    String clave = values[2];
+
+	                    // Crear el estudiante
+	                    Estudiante estudiante = new Estudiante(nombre, email, clave);
+
+	                    // Cargar progresoAct (Mapa <Actividad, ProgresoActividad>)
+	                    Map<Actividad, ProgresoActividad> progresoAct = new HashMap<>();
+	                    if (!values[3].isEmpty()) {
+	                        String[] progresoActData = values[3].split(",");
+	                        for (String act : progresoActData) {
+	                            Actividad actividad = mapaActividades.get(act.trim());
+	                            if (actividad != null) {
+	                                String llave = email + "_" + actividad.getNombre(); // Use email as part of the key
+	                                ProgresoActividad progreso = mapaProgresoActividad.get(llave);
+	                                progresoAct.put(actividad, progreso);
+	                            } else {
+	                                System.out.println("Advertencia: Actividad '" + act + "' no encontrada para el estudiante " + email);
+	                            }
+	                        }
 	                    }
-	                }
-	                estudiante.setLP(lp);
-	                estudiante.setProgresoPaths(progresoPaths);
+	                    estudiante.setProgresoAct(progresoAct);
 
-	                // Cargar actividades realizadas
-	                String[] actividadesRealizadasData = values[5].split(",");
-	                List<Actividad> realizadas = new ArrayList<>();
-	                for (String act : actividadesRealizadasData) {
-	                    Actividad actividad = mapaActividades.get(act.trim());
-	                    if (actividad != null) {
-	                        realizadas.add(actividad);
-	                    } else {
-	                        System.out.println("Advertencia: Actividad realizada '" + act + "' no encontrada para el estudiante " + nombre);
+	                    // Cargar progresoPaths (Mapa <LearningPath, ProgresoPath>)
+	                    Map<LearningPath, ProgresoPath> progresoPaths = new HashMap<>();
+	                    List<LearningPath> lp = new ArrayList<>();
+	                    if (!values[4].isEmpty()) {
+	                        String[] progresoPathsData = values[4].split(",");
+	                        for (String path : progresoPathsData) {
+	                            LearningPath learningPath = mapaPaths.get(path.trim());
+	                            if (learningPath != null) {
+	                                String llaveLP = email + "_" + learningPath.getTitulo(); // Use email as part of the key
+	                                ProgresoPath progreso = mapaProgresoPath.get(llaveLP);
+	                                progresoPaths.put(learningPath, progreso);
+	                                lp.add(learningPath);
+	                            } else {
+	                                System.out.println("Advertencia: LearningPath '" + path + "' no encontrado para el estudiante " + email);
+	                            }
+	                        }
 	                    }
+	                    estudiante.setLP(lp);
+	                    estudiante.setProgresoPaths(progresoPaths);
+
+	                    // Cargar actividades realizadas
+	                    List<Actividad> realizadas = new ArrayList<>();
+	                    if (!values[5].isEmpty()) {
+	                        String[] actividadesRealizadasData = values[5].split(",");
+	                        for (String act : actividadesRealizadasData) {
+	                            Actividad actividad = mapaActividades.get(act.trim());
+	                            if (actividad != null) {
+	                                realizadas.add(actividad);
+	                            } else {
+	                                System.out.println("Advertencia: Actividad realizada '" + act + "' no encontrada para el estudiante " + email);
+	                            }
+	                        }
+	                    }
+	                    estudiante.setRealizadas(realizadas);
+
+	                    // Añadir estudiante al mapa usando el correo como clave
+	                    mapaEstudiantes.put(estudiante.getCorreo(), estudiante);
 	                }
-	                estudiante.setRealizadas(realizadas);
-
-
-	                // Añadir estudiante al mapa
-	                mapaEstudiantes.put(estudiante.getNombre(), estudiante);
 	            }
 	        } catch (IOException e) {
 	            e.printStackTrace();
@@ -637,8 +680,7 @@ public class ManejoPersistencia {
 	        System.out.println("Estudiantes cargados exitosamente.");
 	        return mapaEstudiantes;
 	    }
-	    
-	    
+
 	    
 	 
 	    
@@ -654,125 +696,134 @@ public class ManejoPersistencia {
 		//SECCION PROFESORES
 	    
 	    
-	    public Map<String, Profesor> crearProfesorData(String nombre, String correo, String contrasena){
-	    	Profesor profe = new Profesor(nombre, correo, contrasena);
-			mapaProfesores.put(profe.getNombre(), profe);
-			
-			guardarProfesor();
-			
-			return mapaProfesores;
+	 // SECCION PROFESORES
+
+	    public Map<String, Profesor> crearProfesorData(String nombre, String correo, String contrasena) {
+	        Profesor profe = new Profesor(nombre, correo, contrasena);
+	        mapaProfesores.put(profe.getCorreo(), profe); // Use correo as the key
+	        guardarProfesor();
+	        return mapaProfesores;
 	    }
-	    
-	  //Buscar un usuario
-	    public Profesor buscarProfe(String nombre) {
-			   Profesor profe = mapaProfesores.get(nombre);
-			   return profe;
-		   }
-	    
-	    public Map<String, Profesor> modificarProfe( String modificar, String nombreuser){
-				   Profesor profe = (Profesor) mapaProfesores.get(nombreuser);
-				   profe.setContrasena(modificar);
-				   
-				   guardarProfesor();
-				   
-				   return mapaProfesores;
-		}
-	    public ArrayList<String> formatoProfesor(Profesor prof){
-	    	
-			   ArrayList<String> rta = new ArrayList<>(); 
 
-			   
-			   String nombre = prof.getNombre();
-			   String email = prof.getCorreo();
-			   String clave = prof.getContrasena();
-			   
-			   String lpCreados = "";
-			   
-			   ArrayList<LearningPath> path = (ArrayList<LearningPath>) prof.getLearningPathsCreados();	
-			   
-			   
-			   
-			   for (LearningPath c: path) {
-				   String nombrePath = c.getTitulo();
-				   lpCreados = lpCreados + ", " + nombrePath;
+	    // Buscar un profesor por correo
+	    public Profesor buscarProfe(String correo) {
+	        return mapaProfesores.get(correo); // Use correo as the key
+	    }
 
-			      }
-			   
-			   rta.add(nombre);
-			   rta.add(email);
-			   rta.add(clave);
-			   rta.add(lpCreados);
-			   return rta;
-			   
-			   
-			   
-			   }
-	    
+	    // Modificar un profesor por correo
+	    public Map<String, Profesor> modificarProfe(String modificar, String correo) {
+	        Profesor profe = mapaProfesores.get(correo); // Use correo as the key
+	        if (profe != null) {
+	            profe.setContrasena(modificar);
+	            guardarProfesor();
+	        } else {
+	            System.out.println("Error: Profesor con el correo '" + correo + "' no encontrado.");
+	        }
+	        return mapaProfesores;
+	    }
 
-	
-			
-			public Map<String, Profesor> guardarProfesor() {
-			// TODO Auto-generated method stub
-				String nombreCSV = "data/datosProfesores.csv";
-				   
-				   try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
-			           for (String llave: mapaProfesores.keySet()) {
-			        	   ArrayList<String> lineaPath = formatoProfesor(mapaProfesores.get(llave));
-			        	   String line = String.join(";", lineaPath);
-			               writer.write(line);
-			               writer.newLine();
-			           }
-			      
-			           System.out.println("Se ha guardado exitosamente.");
-			           
-			       } catch (IOException e) {
-			           e.printStackTrace();
-			       }
-				   
-				   return mapaProfesores;
-		}
+	    // Formato de profesor para guardar
+	    public ArrayList<String> formatoProfesor(Profesor prof) {
+	        ArrayList<String> rta = new ArrayList<>();
 
-			/**
-		     * Cargar Profesores desde el archivo CSV.
-		     */
-		    public Map<String, Profesor> cargarProfesores() {
-		        String nombreCSV = "data/datosUsuariosProfesores.csv";
+	        String nombre = prof.getNombre();
+	        String email = prof.getCorreo();
+	        String clave = prof.getContrasena();
 
-		        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
-		            String line;
-		            while ((line = br.readLine()) != null) {
-		                String[] values = line.split(";");
-		                String nombre = values[0];
-		                String email = values[1];
-		                String clave = values[2];
-		                String lpCreados = values[3];
-		                // Crear profesor y añadir al mapa
-		                Profesor profesor = new Profesor(nombre, email, clave);
-		             // Asociar LearningPaths creados
-		                String[] titulosLP = lpCreados.split(",");
-		                List<LearningPath> listaLPCreados = new ArrayList<>();
-		                for (String titulo : titulosLP) {
-		                    LearningPath lp = mapaPaths.get(titulo.trim());
-		                    if (lp != null) {
-		                        listaLPCreados.add(lp);
-		                    } else {
-		                        System.out.println("Advertencia: LearningPath '" + titulo + "' no encontrado para el profesor " + nombre);
-		                    }
-		                }
-		                profesor.setLearningPathsCreados(listaLPCreados);
+	        String lpCreados = "";
+	        List<LearningPath> paths = prof.getLearningPathsCreados();
 
-		                // Añadir profesor al mapa
-		                mapaProfesores.put(profesor.getNombre(), profesor);
-		            }
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
+	        for (LearningPath lp : paths) {
+	            lpCreados += "," + lp.getTitulo();
+	        }
 
-		        System.out.println("Profesores cargados exitosamente.");
-		        return mapaProfesores;
-		    }
+	        rta.add(nombre);
+	        rta.add(email);
+	        rta.add(clave);
+	        rta.add(lpCreados.isEmpty() ? "" : lpCreados.substring(1)); // Remove leading comma if present
 
-  
+	        return rta;
+	    }
+
+	    // Guardar los profesores
+	    public Map<String, Profesor> guardarProfesor() {
+	        String nombreCSV = "datos/datosProfesores.csv";
+
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+	            for (Profesor profesor : mapaProfesores.values()) {
+	                ArrayList<String> lineaProfesor = formatoProfesor(profesor);
+	                String line = String.join(";", lineaProfesor);
+	                writer.write(line);
+	                writer.newLine();
+	            }
+
+	            System.out.println("Profesores guardados exitosamente.");
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
+	        return mapaProfesores;
+	    }
+
+	    // Cargar profesores desde el archivo CSV
+	    public Map<String, Profesor> cargarProfesores() {
+	        String nombreCSV = "datos/datosUsuariosProfesores.csv";
+
+	        try {
+	            // Check if the file exists, create it if not
+	            java.io.File file = new java.io.File(nombreCSV);
+	            if (!file.exists()) {
+	                System.out.println("Archivo 'datosUsuariosProfesores.csv' no encontrado. Creando archivo vacío...");
+	                file.getParentFile().mkdirs(); // Create directories if they don't exist
+	                file.createNewFile(); // Create the file
+	                return mapaProfesores; // Return empty map if no data exists
+	            }
+
+	            try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	                String line;
+	                while ((line = br.readLine()) != null) {
+	                    String[] values = line.split(";");
+	                    if (values.length < 4) {
+	                        // Skip lines that don't have enough data
+	                        System.out.println("Línea malformada, omitiendo: " + line);
+	                        continue;
+	                    }
+
+	                    String nombre = values[0];
+	                    String email = values[1];
+	                    String clave = values[2];
+	                    String lpCreados = values[3];
+
+	                    // Crear profesor
+	                    Profesor profesor = new Profesor(nombre, email, clave);
+
+	                    // Asociar LearningPaths creados
+	                    List<LearningPath> listaLPCreados = new ArrayList<>();
+	                    if (!lpCreados.isEmpty()) {
+	                        String[] titulosLP = lpCreados.split(",");
+	                        for (String titulo : titulosLP) {
+	                            LearningPath lp = mapaPaths.get(titulo.trim());
+	                            if (lp != null) {
+	                                listaLPCreados.add(lp);
+	                            } else {
+	                                System.out.println("Advertencia: LearningPath '" + titulo + "' no encontrado para el profesor " + email);
+	                            }
+	                        }
+	                    }
+	                    profesor.setLearningPathsCreados(listaLPCreados);
+
+	                    // Añadir profesor al mapa usando el correo como clave
+	                    mapaProfesores.put(profesor.getCorreo(), profesor);
+	                }
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
+	        System.out.println("Profesores cargados exitosamente.");
+	        return mapaProfesores;
+	    }
+
 				   
 
 	//FIN SECCION PARA PROFESORES
@@ -780,232 +831,239 @@ public class ManejoPersistencia {
 		    
 		    
  // SECCION PROGRESOPATH
-		    public void crearProgresoPathData(ProgresoPath pPath ){
-				mapaProgresoPath.put(pPath.getLp().getTitulo(), pPath);
-				guardarProgresoPath();
-		    }
+	 // SECCION PROGRESOPATH
 
+	    public void crearProgresoPathData(ProgresoPath pPath) {
+	        // Generate the key using correoEstudiante + "_" + lpNombre
+	        String key = pPath.getEstudiante().getCorreo() + "_" + pPath.getLp().getTitulo();
+	        mapaProgresoPath.put(key, pPath);
+	        guardarProgresoPath();
+	    }
+	    // Buscar un progresoPath por clave
+	    public ProgresoPath buscarProgPath(String clave) {
+	        return mapaProgresoPath.get(clave); // Use correo as the key
+	    }
 
-		    public ArrayList<String> formatoProgresoPath(ProgresoPath progreso) {
-		        ArrayList<String> rta = new ArrayList<>();
+	    public ArrayList<String> formatoProgresoPath(ProgresoPath progreso) {
+	        ArrayList<String> rta = new ArrayList<>();
 
-		        String nombreLP = progreso.getLp().getTitulo();
-		        String fechaInicio = new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaInicioPath());
-		        String fechaFin = progreso.getFechaFinPath() != null
-		                ? new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaFinPath())
-		                : "N/A"; // Si fechaFin es nula, se usa "N/A"
+	        String nombreLP = progreso.getLp().getTitulo();
+	        String fechaInicio = new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaInicioPath());
+	        String fechaFin = progreso.getFechaFinPath() != null
+	                ? new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaFinPath())
+	                : "N/A"; // If fechaFin is null, use "N/A"
 
-		        String porcentaje = String.valueOf(progreso.getPorcentajePath());
-		        String tasaExito = String.valueOf(progreso.getTasaExito());
-		        String tasaFracaso = String.valueOf(progreso.getTasaFracaso());
+	        String porcentaje = String.valueOf(progreso.getPorcentajePath());
+	        String tasaExito = String.valueOf(progreso.getTasaExito());
+	        String tasaFracaso = String.valueOf(progreso.getTasaFracaso());
 
-		        // Convertir lista de actividades realizadas a un String separado por comas
-		        String actividadesRealizadas = progreso.getActividadesRealizadas() != null
-		                ? String.join(",", progreso.getActividadesRealizadas().stream().map(Actividad::getNombre).toArray(String[]::new))
-		                : "";
+	        // Convert list of completed activities to a comma-separated string
+	        String actividadesRealizadas = progreso.getActividadesRealizadas() != null
+	                ? String.join(",", progreso.getActividadesRealizadas().stream().map(Actividad::getNombre).toArray(String[]::new))
+	                : "";
 
-		        String completado = String.valueOf(progreso.isCompletado());
-		        String nombreEstudiante = progreso.getEstudiante().getNombre();
+	        String completado = String.valueOf(progreso.isCompletado());
+	        String correoEstudiante = progreso.getEstudiante().getCorreo(); // Use correo instead of nombre
 
-		        rta.add(nombreLP);
-		        rta.add(fechaInicio);
-		        rta.add(fechaFin);
-		        rta.add(porcentaje);
-		        rta.add(tasaExito);
-		        rta.add(tasaFracaso);
-		        rta.add(actividadesRealizadas);
-		        rta.add(completado);
-		        rta.add(nombreEstudiante);
+	        rta.add(nombreLP);
+	        rta.add(fechaInicio);
+	        rta.add(fechaFin);
+	        rta.add(porcentaje);
+	        rta.add(tasaExito);
+	        rta.add(tasaFracaso);
+	        rta.add(actividadesRealizadas);
+	        rta.add(completado);
+	        rta.add(correoEstudiante); // Store correoEstudiante
 
-		        return rta;
-		    }
+	        return rta;
+	    }
 
-		    public Map<String, ProgresoPath> guardarProgresoPath() {
-		        String nombreCSV = "datos/datosProgresoPath.csv";
+	    public Map<String, ProgresoPath> guardarProgresoPath() {
+	        String nombreCSV = "datos/datosProgresoPath.csv";
 
-		        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
-		            for (ProgresoPath progreso : mapaProgresoPath.values()) {
-		                ArrayList<String> lineaProgreso = formatoProgresoPath(progreso);
-		                String line = String.join(";", lineaProgreso);
-		                writer.write(line);
-		                writer.newLine();
-		            }
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+	            for (ProgresoPath progreso : mapaProgresoPath.values()) {
+	                ArrayList<String> lineaProgreso = formatoProgresoPath(progreso);
+	                String line = String.join(";", lineaProgreso);
+	                writer.write(line);
+	                writer.newLine();
+	            }
 
-		            System.out.println("Progresos de LearningPaths guardados exitosamente.");
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
+	            System.out.println("Progresos de LearningPaths guardados exitosamente.");
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
 
-		        return mapaProgresoPath;
-		    }
+	        return mapaProgresoPath;
+	    }
 
+	    public Map<String, ProgresoPath> cargarProgresoPaths() {
+	        String nombreCSV = "datos/datosProgresoPaths.csv";
 
-		    public Map<String, ProgresoPath> cargarProgresoPaths() {
-		        String nombreCSV = "datos/datosProgresoPaths.csv";
+	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	            String line;
+	            while ((line = br.readLine()) != null) {
+	                String[] values = line.split(";");
 
-		        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
-		            String line;
-		            while ((line = br.readLine()) != null) {
-		                String[] values = line.split(";");
+	                // Extract ProgresoPath attributes
+	                String nombreLP = values[0];
+	                Date fechaInicio = new SimpleDateFormat("dd-MM-yyyy").parse(values[1]);
+	                Date fechaFin = values[2].equals("N/A") ? null : new SimpleDateFormat("dd-MM-yyyy").parse(values[2]);
+	                float porcentaje = Float.parseFloat(values[3]);
+	                float tasaExito = Float.parseFloat(values[4]);
+	                float tasaFracaso = Float.parseFloat(values[5]);
 
-		                // Extraer atributos de ProgresoPath
-		                String nombreLP = values[0];
-		                Date fechaInicio = new SimpleDateFormat("dd-MM-yyyy").parse(values[1]);
-		                Date fechaFin = values[2].equals("N/A") ? null : new SimpleDateFormat("dd-MM-yyyy").parse(values[2]);
-		                float porcentaje = Float.parseFloat(values[3]);
-		                float tasaExito = Float.parseFloat(values[4]);
-		                float tasaFracaso = Float.parseFloat(values[5]);
+	                // Load completed activities
+	                String[] actividadesRealizadasData = values[6].split(",");
+	                List<Actividad> actividadesRealizadas = new ArrayList<>();
+	                for (String act : actividadesRealizadasData) {
+	                    Actividad actividad = mapaActividades.get(act.trim());
+	                    if (actividad != null) {
+	                        actividadesRealizadas.add(actividad);
+	                    } else {
+	                        System.out.println("Advertencia: Actividad '" + act + "' no encontrada para ProgresoPath " + nombreLP);
+	                    }
+	                }
 
-		                // Cargar actividades realizadas
-		                String[] actividadesRealizadasData = values[6].split(",");
-		                List<Actividad> actividadesRealizadas = new ArrayList<>();
-		                for (String act : actividadesRealizadasData) {
-		                    Actividad actividad = mapaActividades.get(act.trim());
-		                    if (actividad != null) {
-		                        actividadesRealizadas.add(actividad);
-		                    } else {
-		                        System.out.println("Advertencia: Actividad '" + act + "' no encontrada para ProgresoPath " + nombreLP);
-		                    }
-		                }
+	                boolean completado = Boolean.parseBoolean(values[7]);
+	                String correoEstudiante = values[8];
+	                Estudiante estudiante = mapaEstudiantes.get(correoEstudiante); // Use correo as the key
 
-		                boolean completado = Boolean.parseBoolean(values[7]);
-		                String nombreEstudiante = values[8];
-		                Estudiante estudiante = mapaEstudiantes.get(nombreEstudiante);
+	                if (estudiante == null) {
+	                    System.out.println("Advertencia: Estudiante con correo '" + correoEstudiante + "' no encontrado.");
+	                    continue;
+	                }
 
-		                if (estudiante == null) {
-		                    System.out.println("Advertencia: Estudiante '" + nombreEstudiante + "' no encontrado.");
-		                    continue;
-		                }
+	                LearningPath lp = mapaPaths.get(nombreLP);
+	                if (lp == null) {
+	                    System.out.println("Advertencia: LearningPath '" + nombreLP + "' no encontrado.");
+	                    continue;
+	                }
 
-		                LearningPath lp = mapaPaths.get(nombreLP);
-		                if (lp == null) {
-		                    System.out.println("Advertencia: LearningPath '" + nombreLP + "' no encontrado.");
-		                    continue;
-		                }
+	                // Create the ProgresoPath with basic attributes
+	                ProgresoPath progreso = new ProgresoPath(lp, fechaInicio, estudiante);
 
-		                // Crear el ProgresoPath con atributos básicos
-		                ProgresoPath progreso = new ProgresoPath(lp, fechaInicio, estudiante);
+	                // Set additional attributes
+	                progreso.setFechaFinPath(fechaFin);
+	                progreso.setPorcentajePath(porcentaje);
+	                progreso.setTasaExito(tasaExito);
+	                progreso.setTasaFracaso(tasaFracaso);
+	                progreso.setActividadesRealizadas(actividadesRealizadas);
+	                progreso.setCompletado(completado);
 
-		                // Establecer atributos adicionales
-		                progreso.setFechaFinPath(fechaFin);
-		                progreso.setPorcentajePath(porcentaje);
-		                progreso.setTasaExito(tasaExito);
-		                progreso.setTasaFracaso(tasaFracaso);
-		                progreso.setActividadesRealizadas(actividadesRealizadas);
-		                progreso.setCompletado(completado);
+	                // Generate the unique key
+	                String clave = correoEstudiante + "_" + lp.getTitulo();
+	                mapaProgresoPath.put(clave, progreso);
+	            }
+	        } catch (IOException | ParseException e) {
+	            e.printStackTrace();
+	        }
 
-		                // Generar la clave única
-		                String clave = estudiante.getNombre() + "_" + lp.getTitulo();
-		                mapaProgresoPath.put(clave, progreso);
-		            }
-		        } catch (IOException | ParseException e) {
-		            e.printStackTrace();
-		        }
+	        System.out.println("Progresos de LearningPaths cargados exitosamente.");
+	        return mapaProgresoPath;
+	    }
 
-		        System.out.println("Progresos de LearningPaths cargados exitosamente.");
-		        return mapaProgresoPath;
-		    }
 
 		    //FIN SECCION PROGRESOPATH
 		    
 		    
 		    
 		    //INICIO SECCION PROGRESOACTIVIDAD
-		    public ArrayList<String> formatoProgresoActividad(ProgresoActividad progreso) {
-		        ArrayList<String> rta = new ArrayList<>();
+	    public ArrayList<String> formatoProgresoActividad(ProgresoActividad progreso) {
+	        ArrayList<String> rta = new ArrayList<>();
 
-		        String nombreActividad = progreso.getActividad().getNombre();
-		        String completada = String.valueOf(progreso.isCompletada());
-		        String resultado = progreso.getResultado();
-		        String tiempoDedicado = String.valueOf(progreso.getTiempoDedicado());
+	        String nombreActividad = progreso.getActividad().getNombre();
+	        String completada = String.valueOf(progreso.isCompletada());
+	        String resultado = progreso.getResultado();
+	        String tiempoDedicado = String.valueOf(progreso.getTiempoDedicado());
 
-		        String fechaInicio = progreso.getFechaInicio() != null
-		                ? new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaInicio())
-		                : "N/A";
-		        String fechaFin = progreso.getFechaFin() != null
-		                ? new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaFin())
-		                : "N/A";
+	        String fechaInicio = progreso.getFechaInicio() != null
+	                ? new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaInicio())
+	                : "N/A";
+	        String fechaFin = progreso.getFechaFin() != null
+	                ? new SimpleDateFormat("dd-MM-yyyy").format(progreso.getFechaFin())
+	                : "N/A";
 
-		        String nombreEstudiante = progreso.getEstudiante().getNombre();
+	        String nombreEstudiante = progreso.getEstudiante().getNombre();
 
-		        rta.add(nombreActividad);
-		        rta.add(completada);
-		        rta.add(resultado);
-		        rta.add(tiempoDedicado);
-		        rta.add(fechaInicio);
-		        rta.add(fechaFin);
-		        rta.add(nombreEstudiante);
+	        rta.add(nombreActividad);
+	        rta.add(completada);
+	        rta.add(resultado);
+	        rta.add(tiempoDedicado);
+	        rta.add(fechaInicio);
+	        rta.add(fechaFin);
+	        rta.add(nombreEstudiante);
 
-		        return rta;
-		    }
-		    public Map<String, ProgresoActividad> guardarProgresoActividad() {
-		        String nombreCSV = "datos/datosProgresoActividades.csv";
+	        return rta;
+	    }
+	    public Map<String, ProgresoActividad> guardarProgresoActividad() {
+	        String nombreCSV = "datos/datosProgresoActividades.csv";
 
-		        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
-		            for (ProgresoActividad progreso : mapaProgresoActividad.values()) {
-		                ArrayList<String> lineaProgreso = formatoProgresoActividad(progreso);
-		                String line = String.join(";", lineaProgreso);
-		                writer.write(line);
-		                writer.newLine();
-		            }
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
+	            for (ProgresoActividad progreso : mapaProgresoActividad.values()) {
+	                ArrayList<String> lineaProgreso = formatoProgresoActividad(progreso);
+	                String line = String.join(";", lineaProgreso);
+	                writer.write(line);
+	                writer.newLine();
+	            }
 
-		            System.out.println("Progresos de Actividades guardados exitosamente.");
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
+	            System.out.println("Progresos de Actividades guardados exitosamente.");
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
 
-		        return mapaProgresoActividad;
-		    }
-		    public Map<String, ProgresoActividad> cargarProgresoActividades() {
-		        String nombreCSV = "datos/datosProgresoActividades.csv";
+	        return mapaProgresoActividad;
+	    }
+	    public Map<String, ProgresoActividad> cargarProgresoActividades() {
+	        String nombreCSV = "datos/datosProgresoActividades.csv";
 
-		        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
-		            String line;
-		            while ((line = br.readLine()) != null) {
-		                String[] values = line.split(";");
+	        try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	            String line;
+	            while ((line = br.readLine()) != null) {
+	                String[] values = line.split(";");
 
-		                // Extraer atributos de ProgresoActividad
-		                String nombreActividad = values[0];
-		                boolean completada = Boolean.parseBoolean(values[1]);
-		                String resultado = values[2];
-		                long tiempoDedicado = Long.parseLong(values[3]);
+	                // Extraer atributos de ProgresoActividad
+	                String nombreActividad = values[0];
+	                boolean completada = Boolean.parseBoolean(values[1]);
+	                String resultado = values[2];
+	                long tiempoDedicado = Long.parseLong(values[3]);
 
-		                Date fechaInicio = values[4].equals("N/A") ? null : new SimpleDateFormat("dd-MM-yyyy").parse(values[4]);
-		                Date fechaFin = values[5].equals("N/A") ? null : new SimpleDateFormat("dd-MM-yyyy").parse(values[5]);
+	                Date fechaInicio = values[4].equals("N/A") ? null : new SimpleDateFormat("dd-MM-yyyy").parse(values[4]);
+	                Date fechaFin = values[5].equals("N/A") ? null : new SimpleDateFormat("dd-MM-yyyy").parse(values[5]);
 
-		                String nombreEstudiante = values[6];
-		                Estudiante estudiante = mapaEstudiantes.get(nombreEstudiante);
+	                String nombreEstudiante = values[6];
+	                Estudiante estudiante = mapaEstudiantes.get(nombreEstudiante);
 
-		                if (estudiante == null) {
-		                    System.out.println("Advertencia: Estudiante '" + nombreEstudiante + "' no encontrado.");
-		                    continue;
-		                }
+	                if (estudiante == null) {
+	                    System.out.println("Advertencia: Estudiante '" + nombreEstudiante + "' no encontrado.");
+	                    continue;
+	                }
 
-		                Actividad actividad = mapaActividades.get(nombreActividad);
-		                if (actividad == null) {
-		                    System.out.println("Advertencia: Actividad '" + nombreActividad + "' no encontrada.");
-		                    continue;
-		                }
+	                Actividad actividad = mapaActividades.get(nombreActividad);
+	                if (actividad == null) {
+	                    System.out.println("Advertencia: Actividad '" + nombreActividad + "' no encontrada.");
+	                    continue;
+	                }
 
-		                // Crear el ProgresoActividad y establecer atributos
-		                ProgresoActividad progreso = new ProgresoActividad(actividad, estudiante);
-		                progreso.setCompletado(completada);
-		                progreso.setResultado(resultado);
-		                progreso.setTiempoDedicado(tiempoDedicado);
-		                progreso.setFechaInicio(fechaInicio);
-		                progreso.setFechaFin(fechaFin);
+	                // Crear el ProgresoActividad y establecer atributos
+	                ProgresoActividad progreso = new ProgresoActividad(actividad, estudiante);
+	                progreso.setCompletado(completada);
+	                progreso.setResultado(resultado);
+	                progreso.setTiempoDedicado(tiempoDedicado);
+	                progreso.setFechaInicio(fechaInicio);
+	                progreso.setFechaFin(fechaFin);
 
-		                // Generar la clave única
-		                String clave = estudiante.getNombre() + "_" + actividad.getNombre();
-		                mapaProgresoActividad.put(clave, progreso);
-		            }
-		        } catch (IOException | ParseException e) {
-		            e.printStackTrace();
-		        }
+	                // Generar la clave única
+	                String clave = estudiante.getNombre() + "_" + actividad.getNombre();
+	                mapaProgresoActividad.put(clave, progreso);
+	            }
+	        } catch (IOException | ParseException e) {
+	            e.printStackTrace();
+	        }
 
-		        System.out.println("Progresos de Actividades cargados exitosamente.");
-		        return mapaProgresoActividad;
-		    }
+	        System.out.println("Progresos de Actividades cargados exitosamente.");
+	        return mapaProgresoActividad;
+	    }
 
 			public Map<String, LearningPath> getMapaPaths() {
 				// TODO Auto-generated method stub

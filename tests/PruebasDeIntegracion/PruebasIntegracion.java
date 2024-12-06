@@ -167,7 +167,7 @@ class PruebasIntegracion {
 				}	
 				
 				void test13() {
-					e1.inscripcion(lp1);
+					e1.inscripcion(lp1, persistencia);
 					Boolean rta = e1.verificarPathExistente(lp1);
 					
 					assertEquals(true, rta);
