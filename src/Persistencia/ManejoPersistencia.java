@@ -293,6 +293,7 @@ public class ManejoPersistencia {
 	        System.out.println("Las actividades se han cargado exitosamente.");
 	        return mapaActividades;
 	    }
+	    
 		
 	//FIN SECCION PARA ACTIVIDADES
 		
@@ -507,7 +508,8 @@ public class ManejoPersistencia {
 
 	    // Buscar un estudiante por correo
 	    public Estudiante buscarEstu(String correo) {
-	        return mapaEstudiantes.get(correo); // Use correo as the key
+	        if (correo == null || correo.isEmpty()) return null;
+	        return mapaEstudiantes.get(correo.trim().toLowerCase()); // Normalize email
 	    }
 
 	    // Modificar un estudiante por correo
@@ -566,16 +568,21 @@ public class ManejoPersistencia {
 	        return rta;
 	    }
 
-	    // Guardar estudiantes
 	    public Map<String, Estudiante> guardarEstudiante() {
 	        String nombreCSV = "datos/datosEstudiantes.csv";
 
 	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
 	            for (Estudiante estudiante : mapaEstudiantes.values()) {
 	                ArrayList<String> lineaEstudiante = formatoEstudiante(estudiante);
-	                String line = String.join(";", lineaEstudiante);
-	                writer.write(line);
-	                writer.newLine();
+
+	                // Validación: Asegurar que no haya datos vacíos críticos
+	                if (lineaEstudiante.size() >= 3) {
+	                    String line = String.join(";", lineaEstudiante);
+	                    writer.write(line);
+	                    writer.newLine();
+	                } else {
+	                    System.out.println("Estudiante con datos insuficientes no guardado: " + estudiante);
+	                }
 	            }
 
 	            System.out.println("Estudiantes guardados exitosamente.");
@@ -586,7 +593,9 @@ public class ManejoPersistencia {
 	        return mapaEstudiantes;
 	    }
 
+
 	    // Cargar estudiantes desde el archivo CSV
+	 // Cargar estudiantes desde el archivo CSV
 	    public Map<String, Estudiante> cargarEstudiantes() {
 	        String nombreCSV = "datos/datosEstudiantes.csv";
 
@@ -604,15 +613,15 @@ public class ManejoPersistencia {
 	                String line;
 	                while ((line = br.readLine()) != null) {
 	                    String[] values = line.split(";");
-	                    if (values.length < 6) { 
+	                    if (values.length < 6) {
 	                        // Skip lines that don't have enough data
 	                        System.out.println("Línea malformada, omitiendo: " + line);
 	                        continue;
 	                    }
 
-	                    String nombre = values[0];
-	                    String email = values[1];
-	                    String clave = values[2];
+	                    String nombre = values[0].trim();
+	                    String email = values[1].trim().toLowerCase(); // Normalize email
+	                    String clave = values[2].trim();
 
 	                    // Crear el estudiante
 	                    Estudiante estudiante = new Estudiante(nombre, email, clave);
@@ -678,8 +687,11 @@ public class ManejoPersistencia {
 	        }
 
 	        System.out.println("Estudiantes cargados exitosamente.");
+	        System.out.println("Usuarios cargados: " + mapaEstudiantes);
+
 	        return mapaEstudiantes;
 	    }
+
 
 	    
 	 
