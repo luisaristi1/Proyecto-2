@@ -2,6 +2,7 @@ package Persistencia;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -532,41 +533,29 @@ public class ManejoPersistencia {
 	        String email = estu.getCorreo();
 	        String clave = estu.getContrasena();
 
-	        String progresoPaths = "";
-	        String progresoActividades = "";
-	        String realizadas = "";
+	        // Convertir nombres de Learning Paths a una cadena separada por comas
+	        String learningPaths = estu.getProgresoPaths().keySet().stream()
+	                .map(LearningPath::getTitulo)
+	                .reduce((lp1, lp2) -> lp1 + "," + lp2)
+	                .orElse("");
 
-	        // Convert progresoPaths to String
-	        Collection<ProgresoPath> progPathsCollection = estu.getProgresoPaths().values();
-	        for (ProgresoPath progPath : progPathsCollection) {
-	            String nombrePath = progPath.getLp().getTitulo();
-	            progresoPaths += "," + nombrePath;
-	        }
+	        // Convertir nombres de Actividades a una cadena separada por comas
+	        String actividades = estu.getProgresosAct().keySet().stream()
+	                .map(Actividad::getNombre)
+	                .reduce((act1, act2) -> act1 + "," + act2)
+	                .orElse("");
 
-	        // Convert progresoAct to String
-	        Collection<ProgresoActividad> progresoActCollection = estu.getProgresosAct().values();
-	        for (ProgresoActividad progresoAct : progresoActCollection) {
-	            String nombreAct = progresoAct.getActividad().getNombre();
-	            progresoActividades += "," + nombreAct;
-	        }
-
-	        // Process actividades realizadas
-	        List<Actividad> realizadasList = estu.getRealizadas();
-	        for (Actividad actRea : realizadasList) {
-	            String nombreAct = actRea.getNombre();
-	            realizadas += "," + nombreAct;
-	        }
-
-	        // Add all fields to the return list
+	        // Añadir los campos al formato final
 	        rta.add(nombre);
 	        rta.add(email);
 	        rta.add(clave);
-	        rta.add(progresoPaths.isEmpty() ? "" : progresoPaths.substring(1)); // Remove leading comma
-	        rta.add(progresoActividades.isEmpty() ? "" : progresoActividades.substring(1)); // Remove leading comma
-	        rta.add(realizadas.isEmpty() ? "" : realizadas.substring(1)); // Remove leading comma
+	        rta.add(learningPaths);  // Nombres de Learning Paths
+	        rta.add(actividades);    // Nombres de Actividades
 
 	        return rta;
 	    }
+
+
 
 	    public Map<String, Estudiante> guardarEstudiante() {
 	        String nombreCSV = "datos/datosEstudiantes.csv";
@@ -575,13 +564,13 @@ public class ManejoPersistencia {
 	            for (Estudiante estudiante : mapaEstudiantes.values()) {
 	                ArrayList<String> lineaEstudiante = formatoEstudiante(estudiante);
 
-	                // Validación: Asegurar que no haya datos vacíos críticos
-	                if (lineaEstudiante.size() >= 3) {
+	                // Validar que no haya datos críticos vacíos
+	                if (!lineaEstudiante.get(0).isEmpty() && !lineaEstudiante.get(1).isEmpty() && !lineaEstudiante.get(2).isEmpty()) {
 	                    String line = String.join(";", lineaEstudiante);
 	                    writer.write(line);
 	                    writer.newLine();
 	                } else {
-	                    System.out.println("Estudiante con datos insuficientes no guardado: " + estudiante);
+	                    System.out.println("Warning: Estudiante con datos incompletos no guardado: " + estudiante);
 	                }
 	            }
 
@@ -594,101 +583,76 @@ public class ManejoPersistencia {
 	    }
 
 
+
 	    // Cargar estudiantes desde el archivo CSV
 	 // Cargar estudiantes desde el archivo CSV
 	    public Map<String, Estudiante> cargarEstudiantes() {
 	        String nombreCSV = "datos/datosEstudiantes.csv";
 
 	        try {
-	            // Check if the file exists, create it if not
-	            java.io.File file = new java.io.File(nombreCSV);
+	            // Asegurarse de que el archivo exista
+	            File file = new File(nombreCSV);
 	            if (!file.exists()) {
 	                System.out.println("Archivo 'datosEstudiantes.csv' no encontrado. Creando archivo vacío...");
-	                file.getParentFile().mkdirs(); // Create directories if they don't exist
-	                file.createNewFile(); // Create the file
-	                return mapaEstudiantes; // Return empty map if no data exists
+	                file.getParentFile().mkdirs();
+	                file.createNewFile();
+	                return mapaEstudiantes;
 	            }
 
-	            try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 	                String line;
 	                while ((line = br.readLine()) != null) {
 	                    String[] values = line.split(";");
-	                    if (values.length < 6) {
-	                        // Skip lines that don't have enough data
+
+	                    // Validar que haya al menos 3 campos (nombre, correo, contraseña)
+	                    if (values.length >= 3) {
+	                        String nombre = values[0].trim();
+	                        String correo = values[1].trim().toLowerCase(); // Normalizar email
+	                        String clave = values[2].trim();
+
+	                        // Crear el estudiante
+	                        Estudiante estudiante = new Estudiante(nombre, correo, clave);
+
+	                        // Asociar Learning Paths
+	                        if (values.length > 3 && !values[3].isEmpty()) {
+	                            String[] lpNombres = values[3].split(",");
+	                            for (String lpNombre : lpNombres) {
+	                                LearningPath lp = mapaPaths.get(lpNombre.trim());
+	                                if (lp != null) {
+	                                    String key = correo + "_" + lp.getTitulo();
+	                                    estudiante.getProgresoPaths().put(lp, mapaProgresoPath.get(key));
+	                                } else {
+	                                    System.out.println("Advertencia: LearningPath '" + lpNombre.trim() + "' no encontrado.");
+	                                }
+	                            }
+	                        }
+
+	                        // Asociar Actividades
+	                        if (values.length > 4 && !values[4].isEmpty()) {
+	                            String[] actNombres = values[4].split(",");
+	                            for (String actNombre : actNombres) {
+	                                Actividad actividad = mapaActividades.get(actNombre.trim());
+	                                if (actividad != null) {
+	                                    String key = correo + "_" + actividad.getNombre();
+	                                    estudiante.getProgresosAct().put(actividad, mapaProgresoActividad.get(key));
+	                                } else {
+	                                    System.out.println("Advertencia: Actividad '" + actNombre.trim() + "' no encontrada.");
+	                                }
+	                            }
+	                        }
+
+	                        // Añadir estudiante al mapa
+	                        mapaEstudiantes.put(correo, estudiante);
+	                    } else {
 	                        System.out.println("Línea malformada, omitiendo: " + line);
-	                        continue;
 	                    }
-
-	                    String nombre = values[0].trim();
-	                    String email = values[1].trim().toLowerCase(); // Normalize email
-	                    String clave = values[2].trim();
-
-	                    // Crear el estudiante
-	                    Estudiante estudiante = new Estudiante(nombre, email, clave);
-
-	                    // Cargar progresoAct (Mapa <Actividad, ProgresoActividad>)
-	                    Map<Actividad, ProgresoActividad> progresoAct = new HashMap<>();
-	                    if (!values[3].isEmpty()) {
-	                        String[] progresoActData = values[3].split(",");
-	                        for (String act : progresoActData) {
-	                            Actividad actividad = mapaActividades.get(act.trim());
-	                            if (actividad != null) {
-	                                String llave = email + "_" + actividad.getNombre(); // Use email as part of the key
-	                                ProgresoActividad progreso = mapaProgresoActividad.get(llave);
-	                                progresoAct.put(actividad, progreso);
-	                            } else {
-	                                System.out.println("Advertencia: Actividad '" + act + "' no encontrada para el estudiante " + email);
-	                            }
-	                        }
-	                    }
-	                    estudiante.setProgresoAct(progresoAct);
-
-	                    // Cargar progresoPaths (Mapa <LearningPath, ProgresoPath>)
-	                    Map<LearningPath, ProgresoPath> progresoPaths = new HashMap<>();
-	                    List<LearningPath> lp = new ArrayList<>();
-	                    if (!values[4].isEmpty()) {
-	                        String[] progresoPathsData = values[4].split(",");
-	                        for (String path : progresoPathsData) {
-	                            LearningPath learningPath = mapaPaths.get(path.trim());
-	                            if (learningPath != null) {
-	                                String llaveLP = email + "_" + learningPath.getTitulo(); // Use email as part of the key
-	                                ProgresoPath progreso = mapaProgresoPath.get(llaveLP);
-	                                progresoPaths.put(learningPath, progreso);
-	                                lp.add(learningPath);
-	                            } else {
-	                                System.out.println("Advertencia: LearningPath '" + path + "' no encontrado para el estudiante " + email);
-	                            }
-	                        }
-	                    }
-	                    estudiante.setLP(lp);
-	                    estudiante.setProgresoPaths(progresoPaths);
-
-	                    // Cargar actividades realizadas
-	                    List<Actividad> realizadas = new ArrayList<>();
-	                    if (!values[5].isEmpty()) {
-	                        String[] actividadesRealizadasData = values[5].split(",");
-	                        for (String act : actividadesRealizadasData) {
-	                            Actividad actividad = mapaActividades.get(act.trim());
-	                            if (actividad != null) {
-	                                realizadas.add(actividad);
-	                            } else {
-	                                System.out.println("Advertencia: Actividad realizada '" + act + "' no encontrada para el estudiante " + email);
-	                            }
-	                        }
-	                    }
-	                    estudiante.setRealizadas(realizadas);
-
-	                    // Añadir estudiante al mapa usando el correo como clave
-	                    mapaEstudiantes.put(estudiante.getCorreo(), estudiante);
 	                }
 	            }
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
 
-	        System.out.println("Estudiantes cargados exitosamente.");
-	        System.out.println("Usuarios cargados: " + mapaEstudiantes);
-
+	        System.out.println("Estudiantes cargados exitosamente. Total: " + mapaEstudiantes.size());
 	        return mapaEstudiantes;
 	    }
 
@@ -739,34 +703,40 @@ public class ManejoPersistencia {
 	        ArrayList<String> rta = new ArrayList<>();
 
 	        String nombre = prof.getNombre();
-	        String email = prof.getCorreo();
+	        String email = prof.getCorreo().trim().toLowerCase(); // Normalize email
 	        String clave = prof.getContrasena();
 
-	        String lpCreados = "";
-	        List<LearningPath> paths = prof.getLearningPathsCreados();
-
-	        for (LearningPath lp : paths) {
-	            lpCreados += "," + lp.getTitulo();
-	        }
+	        // Convert associated Learning Paths to a comma-separated string
+	        String lpCreados = prof.getLearningPathsCreados().stream()
+	                .map(LearningPath::getTitulo)
+	                .reduce((lp1, lp2) -> lp1 + "," + lp2)
+	                .orElse("");
 
 	        rta.add(nombre);
 	        rta.add(email);
 	        rta.add(clave);
-	        rta.add(lpCreados.isEmpty() ? "" : lpCreados.substring(1)); // Remove leading comma if present
+	        rta.add(lpCreados.isEmpty() ? "" : lpCreados); // Avoid leading commas
 
 	        return rta;
 	    }
 
+
 	    // Guardar los profesores
 	    public Map<String, Profesor> guardarProfesor() {
-	        String nombreCSV = "datos/datosProfesores.csv";
+	        String nombreCSV = "datos/datosUsuariosProfesores.csv";
 
 	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreCSV))) {
 	            for (Profesor profesor : mapaProfesores.values()) {
 	                ArrayList<String> lineaProfesor = formatoProfesor(profesor);
-	                String line = String.join(";", lineaProfesor);
-	                writer.write(line);
-	                writer.newLine();
+
+	                // Validate critical fields before saving
+	                if (!lineaProfesor.get(0).isEmpty() && !lineaProfesor.get(1).isEmpty() && !lineaProfesor.get(2).isEmpty()) {
+	                    String line = String.join(";", lineaProfesor);
+	                    writer.write(line);
+	                    writer.newLine();
+	                } else {
+	                    System.out.println("Warning: Profesor con datos incompletos no guardado: " + profesor);
+	                }
 	            }
 
 	            System.out.println("Profesores guardados exitosamente.");
@@ -777,64 +747,63 @@ public class ManejoPersistencia {
 	        return mapaProfesores;
 	    }
 
+
 	    // Cargar profesores desde el archivo CSV
 	    public Map<String, Profesor> cargarProfesores() {
 	        String nombreCSV = "datos/datosUsuariosProfesores.csv";
 
 	        try {
-	            // Check if the file exists, create it if not
-	            java.io.File file = new java.io.File(nombreCSV);
+	            // Ensure the file exists
+	            File file = new File(nombreCSV);
 	            if (!file.exists()) {
 	                System.out.println("Archivo 'datosUsuariosProfesores.csv' no encontrado. Creando archivo vacío...");
-	                file.getParentFile().mkdirs(); // Create directories if they don't exist
-	                file.createNewFile(); // Create the file
-	                return mapaProfesores; // Return empty map if no data exists
+	                file.getParentFile().mkdirs();
+	                file.createNewFile();
+	                return mapaProfesores;
 	            }
 
-	            try (BufferedReader br = new BufferedReader(new FileReader(nombreCSV))) {
+	            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 	                String line;
 	                while ((line = br.readLine()) != null) {
 	                    String[] values = line.split(";");
-	                    if (values.length < 4) {
-	                        // Skip lines that don't have enough data
-	                        System.out.println("Línea malformada, omitiendo: " + line);
-	                        continue;
-	                    }
 
-	                    String nombre = values[0];
-	                    String email = values[1];
-	                    String clave = values[2];
-	                    String lpCreados = values[3];
+	                    // Validate the minimum number of fields
+	                    if (values.length >= 3) {
+	                        String nombre = values[0].trim();
+	                        String email = values[1].trim().toLowerCase(); // Normalize email
+	                        String clave = values[2].trim();
 
-	                    // Crear profesor
-	                    Profesor profesor = new Profesor(nombre, email, clave);
+	                        // Create Profesor instance
+	                        Profesor profesor = new Profesor(nombre, email, clave);
 
-	                    // Asociar LearningPaths creados
-	                    List<LearningPath> listaLPCreados = new ArrayList<>();
-	                    if (!lpCreados.isEmpty()) {
-	                        String[] titulosLP = lpCreados.split(",");
-	                        for (String titulo : titulosLP) {
-	                            LearningPath lp = mapaPaths.get(titulo.trim());
-	                            if (lp != null) {
-	                                listaLPCreados.add(lp);
-	                            } else {
-	                                System.out.println("Advertencia: LearningPath '" + titulo + "' no encontrado para el profesor " + email);
+	                        // Associate Learning Paths
+	                        if (values.length > 3 && !values[3].isEmpty()) {
+	                            String[] lpCreadosData = values[3].split(",");
+	                            for (String lpTitulo : lpCreadosData) {
+	                                LearningPath lp = mapaPaths.get(lpTitulo.trim());
+	                                if (lp != null) {
+	                                    profesor.getLearningPathsCreados().add(lp);
+	                                } else {
+	                                    System.out.println("Advertencia: LearningPath '" + lpTitulo.trim() + "' no encontrado.");
+	                                }
 	                            }
 	                        }
-	                    }
-	                    profesor.setLearningPathsCreados(listaLPCreados);
 
-	                    // Añadir profesor al mapa usando el correo como clave
-	                    mapaProfesores.put(profesor.getCorreo(), profesor);
+	                        // Add profesor to the map
+	                        mapaProfesores.put(email, profesor);
+	                    } else {
+	                        System.out.println("Línea malformada, omitiendo: " + line);
+	                    }
 	                }
 	            }
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
 
-	        System.out.println("Profesores cargados exitosamente.");
+	        System.out.println("Profesores cargados exitosamente. Total: " + mapaProfesores.size());
 	        return mapaProfesores;
 	    }
+
 
 				   
 
