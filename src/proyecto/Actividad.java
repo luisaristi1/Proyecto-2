@@ -36,7 +36,7 @@ public abstract class Actividad implements Cloneable{
 		this.objetivo = objetivo;
 		this.nivelDificultad = nivelDificultad;
 		this.duracionEsperada = duracionEsperada;
-		this.fechaLimite = null;
+		this.fechaLimite = new Date();
 		this.nombrePrerrequisitos = null;
 		this.obligatorio = obligatorio;
 		this.actividadesSeguimiento = new ArrayList<Actividad>();

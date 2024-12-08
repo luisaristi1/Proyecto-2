@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -224,7 +225,11 @@ public class Estudiante extends Usuario {
     	
     	boolean esta = false;
     	Actividad previa = null;
-    	Date fecha = null;
+    	int dura = actividad.getDuracionEsperada();
+    	
+    	Calendar calendar = Calendar.getInstance();
+    	calendar.add(Calendar.MINUTE, dura);
+    	Date fecha = calendar.getTime();
     	
 
     	if  (progresoPaths.containsKey(actividad.getLearningPath())) {
