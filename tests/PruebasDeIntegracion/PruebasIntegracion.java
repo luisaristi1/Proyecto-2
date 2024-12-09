@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import Persistencia.ManejoPersistencia;
 import proyecto.Actividad;
 import proyecto.Estudiante;
 import proyecto.LearningPath;
@@ -16,7 +17,7 @@ import proyecto.Reseña;
 
 class PruebasIntegracion {
 
-	Registro registro = new Registro();
+	ManejoPersistencia registro = new ManejoPersistencia();
 	Profesor p1 = new Profesor("Carlos Dias", "c.dias@gmail.com", "zaq12wsx");
 	Profesor p2 = new Profesor("Laura Diaz", "l.diaz@gmail.com", "12345678");
 	Profesor p3 = new Profesor("Manuel Villamil", "m.villamil@gmail.com", "87654321");
