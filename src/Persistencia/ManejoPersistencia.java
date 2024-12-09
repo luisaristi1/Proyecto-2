@@ -55,6 +55,17 @@ public class ManejoPersistencia {
 		}
 		return rta;
 	}
+
+	public Boolean verificarProfesorExistente(Profesor usuario) {
+		Boolean rta = false; //por defecto se asume que no está
+		for (String usuar: mapaProfesores.keySet()) {
+			Profesor usu = mapaProfesores.get(usuar);
+			if (usu.equals(usuario)) {
+				rta = true;
+			}
+		}
+		return rta;
+	}
 	
 
 	//SECCI0N PARA ACTIVIDADES
