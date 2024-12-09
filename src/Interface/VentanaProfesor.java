@@ -147,69 +147,134 @@ public class VentanaProfesor extends JFrame {
     }
 
     private void abrirFormularioCrearLearningPath() {
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
-        panel.setBackground(new Color(235, 225, 255));
+        // Crear un nuevo JDialog como ventana independiente
+        JDialog dialog = new JDialog(this, "Crear Nuevo Learning Path", true);
+        dialog.setSize(400, 550);
+        dialog.setLocationRelativeTo(this);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        JLabel tituloLabel = new JLabel("Título:");
-        JLabel descripcionLabel = new JLabel("Descripción:");
-        JLabel objetivosLabel = new JLabel("Objetivos:");
-        JLabel nivelDificultadLabel = new JLabel("Nivel de Dificultad:");
-        JLabel duracionLabel = new JLabel("Duración Estimada (min):");
+        // Panel principal del formulario
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(new Color(245, 235, 255));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        tituloLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        tituloLabel.setForeground(new Color(100, 100, 200));
-        descripcionLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        descripcionLabel.setForeground(new Color(100, 100, 200));
-        objetivosLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        objetivosLabel.setForeground(new Color(100, 100, 200));
-        nivelDificultadLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        nivelDificultadLabel.setForeground(new Color(100, 100, 200));
+        // Título del formulario
+        JLabel headerLabel = new JLabel("Crear Nuevo Learning Path");
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        headerLabel.setForeground(new Color(100, 50, 150));
+        headerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mainPanel.add(headerLabel);
+        mainPanel.add(Box.createVerticalStrut(20));
+
+        // Sección 1: Información Básica
+        JPanel infoPanel = crearSeccion("Información Básica");
+        infoPanel.add(crearFila("Título:", crearCampoTexto()));
+        infoPanel.add(Box.createVerticalStrut(10));
+        infoPanel.add(crearFila("Descripción:", crearCampoTexto()));
+        infoPanel.add(Box.createVerticalStrut(10));
+        infoPanel.add(crearFila("Objetivos:", crearCampoTexto()));
+        mainPanel.add(infoPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
+
+        // Sección 2: Nivel de Dificultad
+        JPanel nivelDificultadPanel = crearSeccion("Nivel de Dificultad");
+        JLabel nivelLabel = new JLabel("Nivel de Dificultad:");
+        nivelLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        nivelLabel.setForeground(new Color(100, 50, 150));
+        nivelLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JComboBox<String> nivelDificultadComboBox = new JComboBox<>(new String[]{"Bajo", "Medio", "Alto"});
+        nivelDificultadComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
+        nivelDificultadPanel.add(nivelLabel);
+        nivelDificultadPanel.add(Box.createVerticalStrut(10));
+        nivelDificultadPanel.add(nivelDificultadComboBox);
+        mainPanel.add(nivelDificultadPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
+
+        // Sección 3: Duración Estimada
+        JPanel duracionPanel = crearSeccion("Duración Estimada");
+        JLabel duracionLabel = new JLabel("Duración Estimada (horas):");
         duracionLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        duracionLabel.setForeground(new Color(100, 100, 200));
+        duracionLabel.setForeground(new Color(100, 50, 150));
+        duracionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JTextField duracionField = crearCampoTexto();
+        duracionPanel.add(duracionLabel);
+        duracionPanel.add(Box.createVerticalStrut(10));
+        duracionPanel.add(duracionField);
+        mainPanel.add(duracionPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
 
-        JTextField tituloField = new JTextField();
-        JTextField descripcionField = new JTextField();
-        JTextField objetivosField = new JTextField();
-        String[] nivelesDificultad = {"Bajo", "Medio", "Alto"};
-        JComboBox<String> nivelDificultadComboBox = new JComboBox<>(nivelesDificultad);
-        JTextField duracionField = new JTextField();
+        // Botones Crear y Cancelar
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.setBackground(new Color(245, 235, 255));
+        JButton crearButton = new JButton("Crear");
+        JButton cancelarButton = new JButton("Cancelar");
+        estilizarBoton(crearButton, new Color(150, 120, 255));
+        estilizarBoton(cancelarButton, new Color(200, 200, 200));
+        buttonPanel.add(crearButton);
+        buttonPanel.add(cancelarButton);
 
-        estilizarCampoTexto(tituloField);
-        estilizarCampoTexto(descripcionField);
-        estilizarCampoTexto(objetivosField);
-        estilizarCampoTexto(duracionField);
+        // Acción de cerrar el formulario
+        cancelarButton.addActionListener(e -> dialog.dispose());
 
-        panel.add(tituloLabel);
-        panel.add(tituloField);
-        panel.add(descripcionLabel);
-        panel.add(descripcionField);
-        panel.add(objetivosLabel);
-        panel.add(objetivosField);
-        panel.add(nivelDificultadLabel);
-        panel.add(nivelDificultadComboBox);
-        panel.add(duracionLabel);
-        panel.add(duracionField);
+        mainPanel.add(buttonPanel);
 
-        JButton okButton = new JButton("Crear");
-        JButton cancelButton = new JButton("Cancelar");
-        okButton.setBackground(new Color(150, 120, 255));
-        okButton.setForeground(Color.WHITE);
-        okButton.setFocusPainted(false);
-        cancelButton.setBackground(new Color(200, 200, 200));
-        cancelButton.setFocusPainted(false);
-
-        panel.add(okButton);
-        panel.add(cancelButton);
-
-        JOptionPane.showConfirmDialog(this, panel, "Crear Nuevo Learning Path", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        // Añadir panel principal al diálogo y mostrarlo
+        dialog.add(mainPanel);
+        dialog.setVisible(true);
     }
 
-    private void estilizarCampoTexto(JTextField field) {
-        field.setBorder(BorderFactory.createLineBorder(new Color(150, 120, 255), 2));
-        field.setFont(new Font("Arial", Font.PLAIN, 14));
-        field.setForeground(new Color(50, 50, 150));
-        field.setHorizontalAlignment(SwingConstants.CENTER);
+    // Método para crear secciones con título
+    private JPanel crearSeccion(String titulo) {
+        JPanel seccionPanel = new JPanel();
+        seccionPanel.setLayout(new BoxLayout(seccionPanel, BoxLayout.Y_AXIS));
+        seccionPanel.setBackground(new Color(230, 220, 255));
+        seccionPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(150, 120, 255), 2),
+                titulo,
+                0,
+                0,
+                new Font("Arial", Font.BOLD, 14),
+                new Color(100, 50, 150)
+        ));
+        return seccionPanel;
     }
+
+    // Método para crear filas con etiqueta y componente
+    private JPanel crearFila(String texto, JComponent componente) {
+        JPanel rowPanel = new JPanel();
+        rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
+        rowPanel.setBackground(new Color(245, 235, 255));
+
+        JLabel label = new JLabel(texto);
+        label.setFont(new Font("Arial", Font.BOLD, 14));
+        label.setForeground(new Color(100, 50, 150));
+        label.setPreferredSize(new Dimension(150, 30)); // Ajustar tamaño para alineación
+        componente.setPreferredSize(new Dimension(200, 30));
+
+        rowPanel.add(label);
+        rowPanel.add(componente);
+        return rowPanel;
+    }
+
+    // Método para crear campos estilizados
+    private JTextField crearCampoTexto() {
+        JTextField textField = new JTextField();
+        textField.setFont(new Font("Arial", Font.PLAIN, 14));
+        textField.setForeground(new Color(50, 50, 150));
+        textField.setBorder(BorderFactory.createLineBorder(new Color(150, 120, 255), 2));
+        return textField;
+    }
+
+    // Método para estilizar botones
+    private void estilizarBoton(JButton boton, Color color) {
+        boton.setBackground(color);
+        boton.setForeground(Color.WHITE);
+        boton.setFocusPainted(false);
+        boton.setFont(new Font("Arial", Font.BOLD, 14));
+        boton.setPreferredSize(new Dimension(120, 30));
+    }
+
 
 
     private void actualizarVentana() {
