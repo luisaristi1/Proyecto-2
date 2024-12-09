@@ -41,7 +41,7 @@ class PruebasIntegracion {
 	@Test
 	void test1() {
 		registro.registrarProfesor(p1);
-		Boolean rta = registro.verificarUsuarioExistente(p1);
+		Boolean rta = registro.verificarProfesorExistente(p1);
 		
 		assertEquals(true, rta);
 		
@@ -50,8 +50,8 @@ class PruebasIntegracion {
 	//registrar estudiante
 	@Test
 	void test2() throws Exception {
-		registro.registrarEstudiante(e1);
-		Boolean rta = registro.verificarUsuarioExistente(e1);
+		registro.crearEstudianteData("Carlos Diaz", "c.dias@gmail.com", "zaq12wsx");
+		Boolean rta = registro.verificarEstudianteExistente(e1);
 			
 		assertEquals(true, rta);
 			
@@ -62,7 +62,7 @@ class PruebasIntegracion {
 		@Test
 		void test3() throws Exception {
 			registro.loginProfesor("c.dias@gail.com", "zaq12wsx");
-			Boolean rta = registro.verificarUsuarioExistente(p1);
+			Boolean rta = registro.verificarProfesorExistente(p1);
 			assertEquals(true, rta);
 				
 		}
@@ -71,7 +71,7 @@ class PruebasIntegracion {
 				@Test
 				void test4() throws Exception {
 					registro.loginEstudiante("n.perez@gmail.com", "12345678");
-					Boolean rta = registro.verificarUsuarioExistente(e1);
+					Boolean rta = registro.verificarEstudianteExistente(e1);
 					assertEquals(true, rta);
 						
 				}
@@ -80,7 +80,7 @@ class PruebasIntegracion {
 				@Test
 				void test5() throws Exception {
 					registro.loginProfesor("l.diaz@gmail.com", "12345678");
-					Boolean rta = registro.verificarUsuarioExistente(p2);
+					Boolean rta = registro.verificarProfesorExistente(p2);
 					assertEquals(false, rta);
 						
 				}	
@@ -89,7 +89,7 @@ class PruebasIntegracion {
 				@Test
 				void test6() throws Exception {
 					registro.loginProfesor("j.tellez@gmail.com", "09876544");
-					Boolean rta = registro.verificarUsuarioExistente(e2);
+					Boolean rta = registro.verificarEstudianteExistente(e2);
 					assertEquals(false, rta);
 						
 				}	
@@ -99,7 +99,7 @@ class PruebasIntegracion {
 				void test7() throws Exception {
 					registro.registrarEstudiante(e1);
 					registro.registrarEstudiante(e1);
-					Boolean rta = registro.verificarUsuarioExistente(e1);
+					Boolean rta = registro.verificarEstudianteExistente(e1);
 						
 					assertEquals(true, rta);
 						
