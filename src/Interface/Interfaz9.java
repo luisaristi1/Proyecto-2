@@ -167,7 +167,11 @@ public class Interfaz9 extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(ventanaLogin, "Se ha ingresado correctamente.");
                 ventanaLogin.dispose();
-                abrirVentanaBienvenida(usuario);
+                if (usuario instanceof Profesor) {
+                    new VentanaProfesor((Profesor) usuario, persistencia);
+                } else if (usuario instanceof Estudiante) {
+                    new VentanaEstudiante();
+                }
             }
         });
 
@@ -178,17 +182,6 @@ public class Interfaz9 extends JFrame {
         ventanaLogin.add(new JLabel());
         ventanaLogin.add(botonIngresar);
         ventanaLogin.setVisible(true);
-    }
-
-    private void abrirVentanaBienvenida(Usuario usuario) {
-        JFrame ventanaBienvenida = new JFrame("Bienvenido");
-        ventanaBienvenida.setSize(300, 200);
-        ventanaBienvenida.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        ventanaBienvenida.setLayout(new BorderLayout());
-
-        JLabel mensaje = new JLabel("Bienvenido, " + usuario.getNombre(), SwingConstants.CENTER);
-        ventanaBienvenida.add(mensaje, BorderLayout.CENTER);
-        ventanaBienvenida.setVisible(true);
     }
 
     public static void main(String[] args) {
