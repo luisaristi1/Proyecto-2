@@ -10,6 +10,7 @@ import Persistencia.ManejoPersistencia;
 @SuppressWarnings("serial")
 public class Interfaz9 extends JFrame {
     private static final ManejoPersistencia persistencia = new ManejoPersistencia();
+    private JPanel centralPanel;
 
     public Interfaz9() {
         // Load data from CSV
@@ -17,30 +18,46 @@ public class Interfaz9 extends JFrame {
 
         // Configure the main window
         setTitle("Learning Path - Inicio");
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Top panel for image
-        JPanel panelImagen = new JPanel(new FlowLayout());
-        ImageIcon imagen = new ImageIcon("img/LP.jpg");
-        JLabel labelImagen = new JLabel(imagen);
-        panelImagen.add(labelImagen);
+        // Top Banner
+        JLabel banner = new JLabel(new ImageIcon("img/LP.jpg"), SwingConstants.CENTER);
+        add(banner, BorderLayout.NORTH);
 
-        // Center panel for buttons
-        JPanel panelBotones = new JPanel(new GridLayout(2, 1, 20, 20));
-        JButton botonEstudiante = new JButton("Perfil Estudiante");
-        JButton botonProfesor = new JButton("Perfil Profesor");
+        // Left and Right Panels
+        JPanel leftPanel = createSidePanel("Profesor");
+        JPanel rightPanel = createSidePanel("Estudiante");
 
-        botonEstudiante.addActionListener(e -> abrirVentanaPerfil("Estudiante"));
-        botonProfesor.addActionListener(e -> abrirVentanaPerfil("Profesor"));
+        add(leftPanel, BorderLayout.WEST);
+        add(rightPanel, BorderLayout.EAST);
 
-        panelBotones.add(botonEstudiante);
-        panelBotones.add(botonProfesor);
+        // Central Panel
+        centralPanel = new JPanel();
+        centralPanel.setLayout(new BoxLayout(centralPanel, BoxLayout.Y_AXIS));
+        centralPanel.setBackground(new Color(245, 245, 255));
+        add(centralPanel, BorderLayout.CENTER);
 
-        // Add components to the main frame
-        add(panelImagen, BorderLayout.NORTH);
-        add(panelBotones, BorderLayout.CENTER);
+        // Initial View
+
+        setVisible(true);
+    }
+
+    private JPanel createSidePanel(String role) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(245, 245, 255));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(50, 0, 0, 0); // Spacing
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        JButton button = createCircularButton(role);
+        button.addActionListener(e -> mostrarOpcionesUsuario(role));
+        panel.add(button, gbc);
+
+        return panel;
     }
 
     private void cargarDatos() {
@@ -58,130 +75,190 @@ public class Interfaz9 extends JFrame {
         }
     }
 
-    private void abrirVentanaPerfil(String perfil) {
-        JFrame ventanaPerfil = new JFrame("Opciones - " + perfil);
-        ventanaPerfil.setSize(400, 300);
-        ventanaPerfil.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        ventanaPerfil.setLayout(new GridLayout(2, 1, 20, 20));
+    private void mostrarOpcionesUsuario(String perfil) {
+        // Clear central panel
+        centralPanel.removeAll();
 
-        JButton botonLogin = new JButton("Ya tengo una cuenta");
-        JButton botonRegistro = new JButton("Registrarme");
+        JLabel titulo = new JLabel("Opciones para " + perfil+ " ", SwingConstants.CENTER);
+        titulo.setFont(new Font("Arial", Font.BOLD, 20));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        botonLogin.addActionListener(e -> abrirVentanaLogin(perfil));
-        botonRegistro.addActionListener(e -> abrirVentanaRegistro(perfil));
+        JButton botonLogin = createStyledButton("Iniciar Sesión");
+        JButton botonRegistro = createStyledButton("Registrarse");
 
-        ventanaPerfil.add(botonLogin);
-        ventanaPerfil.add(botonRegistro);
-        ventanaPerfil.setVisible(true);
+        botonLogin.addActionListener(e -> mostrarFormulario(perfil, "login"));
+        botonRegistro.addActionListener(e -> mostrarFormulario(perfil, "registro"));
+
+        centralPanel.add(Box.createVerticalStrut(50)); // Spacer
+        centralPanel.add(titulo);
+        centralPanel.add(Box.createVerticalStrut(30));
+        centralPanel.add(botonLogin);
+        centralPanel.add(Box.createVerticalStrut(15));
+        centralPanel.add(botonRegistro);
+
+        centralPanel.revalidate();
+        centralPanel.repaint();
     }
 
-    private void abrirVentanaRegistro(String perfil) {
-        JFrame ventanaRegistro = new JFrame("Registro - " + perfil);
-        ventanaRegistro.setSize(500, 400);
-        ventanaRegistro.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        ventanaRegistro.setLayout(new GridLayout(4, 2, 10, 10));
+    private void mostrarFormulario(String perfil, String accion) {
+        // Clear central panel
+        centralPanel.removeAll();
 
-        JLabel labelNombre = new JLabel("Nombre:");
-        JTextField textNombre = new JTextField();
+        // Configure layout
+        centralPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel labelCorreo = new JLabel("Correo:");
-        JTextField textCorreo = new JTextField();
+        JLabel titulo = new JLabel((accion.equals("login") ? "Inicio de Sesión" : "Registro") + " - " + perfil, SwingConstants.CENTER);
+        titulo.setFont(new Font("Arial", Font.BOLD, 20));
+        gbc.gridwidth = 2;
+        centralPanel.add(titulo, gbc);
 
-        JLabel labelContrasena = new JLabel("Contraseña:");
-        JPasswordField textContrasena = new JPasswordField();
+        gbc.gridy++;
+        gbc.gridwidth = 1;
 
-        JButton botonRegistrar = new JButton("Registrar");
+        if (accion.equals("login")) {
+            addLoginForm(gbc, perfil);
+        } else {
+            addRegisterForm(gbc, perfil);
+        }
 
-        botonRegistrar.addActionListener(e -> {
-            String nombre = textNombre.getText().trim();
-            String correo = textCorreo.getText().trim();
-            String contrasena = new String(textContrasena.getPassword()).trim();
-
-            if (nombre.isEmpty() || correo.isEmpty() || contrasena.isEmpty()) {
-                JOptionPane.showMessageDialog(ventanaRegistro, "Todos los campos son obligatorios.");
-                return;
-            }
-
-            if (!correo.endsWith("@uniandes.edu.co")) {
-                JOptionPane.showMessageDialog(ventanaRegistro, "El correo debe ser institucional (@uniandes.edu.co).");
-                return;
-            }
-
-            if (perfil.equals("Estudiante")) {
-                if (persistencia.buscarEstu(correo) != null) {
-                    JOptionPane.showMessageDialog(ventanaRegistro, "Ya existe un estudiante con este correo.");
-                } else {
-                    persistencia.crearEstudianteData(nombre, correo, contrasena);
-                    JOptionPane.showMessageDialog(ventanaRegistro, "Estudiante registrado exitosamente.");
-                    ventanaRegistro.dispose();
-                }
-            } else if (perfil.equals("Profesor")) {
-                if (persistencia.buscarProfe(correo) != null) {
-                    JOptionPane.showMessageDialog(ventanaRegistro, "Ya existe un profesor con este correo.");
-                } else {
-                    persistencia.crearProfesorData(nombre, correo, contrasena);
-                    JOptionPane.showMessageDialog(ventanaRegistro, "Profesor registrado exitosamente.");
-                    ventanaRegistro.dispose();
-                }
-            }
-        });
-
-        ventanaRegistro.add(labelNombre);
-        ventanaRegistro.add(textNombre);
-        ventanaRegistro.add(labelCorreo);
-        ventanaRegistro.add(textCorreo);
-        ventanaRegistro.add(labelContrasena);
-        ventanaRegistro.add(textContrasena);
-        ventanaRegistro.add(new JLabel());
-        ventanaRegistro.add(botonRegistrar);
-        ventanaRegistro.setVisible(true);
+        centralPanel.revalidate();
+        centralPanel.repaint();
     }
 
-    private void abrirVentanaLogin(String perfil) {
-        JFrame ventanaLogin = new JFrame("Inicio de Sesión - " + perfil);
-        ventanaLogin.setSize(400, 300);
-        ventanaLogin.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        ventanaLogin.setLayout(new GridLayout(3, 2, 10, 10));
-
+    private void addLoginForm(GridBagConstraints gbc, String perfil) {
+        // Email
         JLabel labelCorreo = new JLabel("Correo:");
-        JTextField textCorreo = new JTextField();
+        centralPanel.add(labelCorreo, gbc);
+        gbc.gridx++;
+        JTextField textCorreo = new JTextField(15);
+        centralPanel.add(textCorreo, gbc);
 
+        gbc.gridy++;
+        gbc.gridx = 0;
+
+        // Password
         JLabel labelContrasena = new JLabel("Contraseña:");
-        JPasswordField textContrasena = new JPasswordField();
+        centralPanel.add(labelContrasena, gbc);
+        gbc.gridx++;
+        JPasswordField textContrasena = new JPasswordField(15);
+        centralPanel.add(textContrasena, gbc);
 
-        JButton botonIngresar = new JButton("Ingresar");
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
 
+        // Button
+        JButton botonIngresar = createStyledButton("Ingresar");
         botonIngresar.addActionListener(e -> {
             String correo = textCorreo.getText().trim();
             String contrasena = new String(textContrasena.getPassword()).trim();
-
             if (correo.isEmpty() || contrasena.isEmpty()) {
-                JOptionPane.showMessageDialog(ventanaLogin, "Todos los campos son obligatorios.");
+                JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.");
                 return;
             }
 
             Usuario usuario = perfil.equals("Estudiante") ? persistencia.buscarEstu(correo) : persistencia.buscarProfe(correo);
 
             if (usuario == null || !usuario.getContrasena().equals(contrasena)) {
-                JOptionPane.showMessageDialog(ventanaLogin, "Usuario o contraseña incorrectos.");
+                JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.");
             } else {
-                JOptionPane.showMessageDialog(ventanaLogin, "Se ha ingresado correctamente.");
-                ventanaLogin.dispose();
                 if (usuario instanceof Profesor) {
-                    new VentanaProfesor((Profesor) usuario, persistencia);
-                } else if (usuario instanceof Estudiante) {
-                    new VentanaEstudiante();
+                    new VentanaProfesor((Profesor) usuario, persistencia).setVisible(true);
+                } else {
+                    new VentanaEstudiante().setVisible(true);
                 }
+                this.dispose();
             }
         });
+        centralPanel.add(botonIngresar, gbc);
+    }
 
-        ventanaLogin.add(labelCorreo);
-        ventanaLogin.add(textCorreo);
-        ventanaLogin.add(labelContrasena);
-        ventanaLogin.add(textContrasena);
-        ventanaLogin.add(new JLabel());
-        ventanaLogin.add(botonIngresar);
-        ventanaLogin.setVisible(true);
+    private void addRegisterForm(GridBagConstraints gbc, String perfil) {
+        // Name
+        JLabel labelNombre = new JLabel("Nombre:");
+        centralPanel.add(labelNombre, gbc);
+        gbc.gridx++;
+        JTextField textNombre = new JTextField(15);
+        centralPanel.add(textNombre, gbc);
+
+        gbc.gridy++;
+        gbc.gridx = 0;
+
+        // Email
+        JLabel labelCorreo = new JLabel("Correo:");
+        centralPanel.add(labelCorreo, gbc);
+        gbc.gridx++;
+        JTextField textCorreo = new JTextField(15);
+        centralPanel.add(textCorreo, gbc);
+
+        gbc.gridy++;
+        gbc.gridx = 0;
+
+        // Password
+        JLabel labelContrasena = new JLabel("Contraseña:");
+        centralPanel.add(labelContrasena, gbc);
+        gbc.gridx++;
+        JPasswordField textContrasena = new JPasswordField(15);
+        centralPanel.add(textContrasena, gbc);
+
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+
+        // Button
+        JButton botonRegistrar = createStyledButton("Registrar");
+        botonRegistrar.addActionListener(e -> {
+            String nombre = textNombre.getText().trim();
+            String correo = textCorreo.getText().trim();
+            String contrasena = new String(textContrasena.getPassword()).trim();
+
+            if (nombre.isEmpty() || correo.isEmpty() || contrasena.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.");
+                return;
+            }
+
+            if (!correo.endsWith("@uniandes.edu.co")) {
+                JOptionPane.showMessageDialog(this, "El correo debe ser institucional (@uniandes.edu.co).");
+                return;
+            }
+
+            if (perfil.equals("Estudiante") && persistencia.buscarEstu(correo) == null) {
+                persistencia.crearEstudianteData(nombre, correo, contrasena);
+                JOptionPane.showMessageDialog(this, "Estudiante registrado exitosamente.");
+            } else if (perfil.equals("Profesor") && persistencia.buscarProfe(correo) == null) {
+                persistencia.crearProfesorData(nombre, correo, contrasena);
+                JOptionPane.showMessageDialog(this, "Profesor registrado exitosamente.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Ya existe un usuario con este correo.");
+            }
+        });
+        centralPanel.add(botonRegistrar, gbc);
+    }
+
+    private JButton createCircularButton(String text) {
+        JButton button = new JButton(text);
+        button.setPreferredSize(new Dimension(100, 100));
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setBackground(new Color(100, 150, 250));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
+        return button;
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.PLAIN, 14));
+        button.setPreferredSize(new Dimension(150, 40));
+        button.setBackground(new Color(100, 150, 250));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        return button;
     }
 
     public static void main(String[] args) {

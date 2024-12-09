@@ -1,4 +1,4 @@
-package Interface;
+	package Interface;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,7 +13,11 @@ import java.util.List;
 
 public class VentanaProfesor extends JFrame {
 
-    private Profesor profesor;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Profesor profesor;
     private ManejoPersistencia persistencia;
 
     // Constructor
