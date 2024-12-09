@@ -2,286 +2,326 @@ package Interface;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 import Persistencia.ManejoPersistencia;
 import proyecto.LearningPath;
 import proyecto.Profesor;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.List;
-
 public class VentanaProfesor extends JFrame {
-
-    private static final long serialVersionUID = 1L;
     private Profesor profesor;
     private ManejoPersistencia persistencia;
-    private JPanel contentPanel;
 
     // Constructor
     public VentanaProfesor(Profesor profesor, ManejoPersistencia persistencia) {
         this.profesor = profesor;
         this.persistencia = persistencia;
 
-        // Configure the main window
+        // Configuración de la ventana
         setTitle("Learning Paths - Profesor");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Main panel
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
-        mainPanel.setBackground(new Color(245, 245, 255)); // Light background
+        // Panel principal
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(245, 245, 255));
         add(mainPanel);
 
-        // Header with image
+        // Encabezado con imagen
         JLabel headerLabel = new JLabel(new ImageIcon("img/LP2.jpg"));
         mainPanel.add(headerLabel, BorderLayout.NORTH);
 
-        // Content panel
-        contentPanel = new JPanel();
+        // Panel central
+        JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(new Color(245, 245, 255));
         contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         mainPanel.add(contentPanel, BorderLayout.CENTER);
 
-        // Add sections
-        updateSections();
+        // Sección de "Cursos creados"
+        contentPanel.add(crearSeccion("Cursos creados", profesor.getLearningPathsCreados(), true));
+
+        // Espaciador
+        contentPanel.add(Box.createVerticalStrut(20));
+
+        // Sección de "Otros cursos"
+        contentPanel.add(crearSeccion("Otros cursos", persistencia.getMapaPaths().values().stream().toList(), false));
+
+        // Botón para crear Learning Path
+        JButton crearLPButton = new JButton("Crear Learning Path");
+        crearLPButton.setBackground(new Color(180, 150, 250));
+        crearLPButton.setForeground(Color.WHITE);
+        crearLPButton.setFocusPainted(false);
+        crearLPButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        crearLPButton.setFont(new Font("Arial", Font.BOLD, 14));
+        crearLPButton.addActionListener(e -> abrirFormularioCrearLearningPath());
+        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(crearLPButton);
 
         setVisible(true);
     }
 
-    private void updateSections() {
-        // Clear the panel
-        contentPanel.removeAll();
+    private JPanel crearSeccion(String titulo, List<LearningPath> cursos, boolean esCreador) {
+        JPanel seccionPanel = new JPanel();
+        seccionPanel.setLayout(new BorderLayout());
+        seccionPanel.setBackground(new Color(235, 225, 255));
+        seccionPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 200), 2));
 
-        // "Cursos creados" section
-        contentPanel.add(createSection("Cursos creados", profesor.getLearningPathsCreados(), true));
-
-        // Spacer
-        contentPanel.add(Box.createVerticalStrut(20));
-
-        // "Otros cursos" section
-        contentPanel.add(createSection("Otros cursos", persistencia.getMapaPaths().values().stream().toList(), false));
-
-        // Add "Create Learning Path" button
-        JButton createLPButton = new JButton("Crear Learning Path");
-        createLPButton.setFont(new Font("Arial", Font.BOLD, 14));
-        createLPButton.setBackground(new Color(200, 170, 255));
-        createLPButton.setForeground(new Color(100, 50, 150));
-        createLPButton.setFocusPainted(false);
-        createLPButton.addActionListener(e -> showCreateLPDialog());
-        contentPanel.add(Box.createVerticalStrut(20)); // Spacer
-        contentPanel.add(createLPButton);
-
-        // Refresh the panel
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    private JPanel createSection(String title, List<LearningPath> courses, boolean isCreator) {
-        JPanel sectionPanel = new JPanel();
-        sectionPanel.setLayout(new BorderLayout());
-        sectionPanel.setBackground(new Color(245, 245, 255));
-        sectionPanel.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 200), 2));
-
-        // Section header
-        JPanel headerPanel = new JPanel();
-        headerPanel.setLayout(new BorderLayout());
+        // Encabezado de la sección
+        JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(new Color(220, 220, 250));
-        JLabel titleLabel = new JLabel(title);
+        JLabel titleLabel = new JLabel(titulo);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setForeground(new Color(100, 100, 200));
         headerPanel.add(titleLabel, BorderLayout.WEST);
 
-        // Collapse/expand icon
-        JLabel toggleIcon = new JLabel(new ImageIcon("img/despliegue1.jpg"));
-        headerPanel.add(toggleIcon, BorderLayout.EAST);
+        JLabel despliegueIcon = new JLabel(new ImageIcon("img/despliegue1.jpg"));
+        headerPanel.add(despliegueIcon, BorderLayout.EAST);
 
-        sectionPanel.add(headerPanel, BorderLayout.NORTH);
+        seccionPanel.add(headerPanel, BorderLayout.NORTH);
 
-        // Courses panel
-        JPanel coursesPanel = new JPanel();
-        coursesPanel.setLayout(new BoxLayout(coursesPanel, BoxLayout.Y_AXIS));
-        coursesPanel.setBackground(new Color(245, 245, 255));
-        sectionPanel.add(coursesPanel, BorderLayout.CENTER);
-        coursesPanel.setVisible(false);
+        // Panel de cursos
+        JPanel cursosPanel = new JPanel();
+        cursosPanel.setLayout(new BoxLayout(cursosPanel, BoxLayout.Y_AXIS));
+        cursosPanel.setBackground(new Color(245, 245, 255));
+        seccionPanel.add(cursosPanel, BorderLayout.CENTER);
+        cursosPanel.setVisible(false);
 
-        for (LearningPath lp : courses) {
-            JButton courseButton = new JButton(lp.getTitulo());
-            courseButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-            coursesPanel.add(courseButton);
-            courseButton.addActionListener(e -> showCourseOptions(lp, isCreator));
-            coursesPanel.add(Box.createVerticalStrut(5));
+        for (LearningPath lp : cursos) {
+            JPanel cursoPanel = new JPanel(new BorderLayout());
+            cursoPanel.setBackground(new Color(245, 245, 255));
+            cursoPanel.setBorder(BorderFactory.createLineBorder(new Color(180, 150, 250), 1));
+
+            JLabel cursoLabel = new JLabel(lp.getTitulo());
+            cursoLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+            cursoPanel.add(cursoLabel, BorderLayout.CENTER);
+
+            JButton opcionesButton = new JButton("Opciones");
+            opcionesButton.setBackground(new Color(150, 120, 255));
+            opcionesButton.setForeground(Color.WHITE);
+            opcionesButton.setFocusPainted(false);
+            opcionesButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+            cursoPanel.add(opcionesButton, BorderLayout.EAST);
+
+            cursosPanel.add(cursoPanel);
         }
 
-        // Collapse/expand action
-        toggleIcon.addMouseListener(new java.awt.event.MouseAdapter() {
-            private boolean expanded = false;
+        despliegueIcon.addMouseListener(new java.awt.event.MouseAdapter() {
+            private boolean desplegado = false;
 
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                expanded = !expanded;
-                coursesPanel.setVisible(expanded);
-                toggleIcon.setIcon(new ImageIcon(expanded ? "img/despliegue2.jpg" : "img/despliegue1.jpg"));
-                sectionPanel.revalidate();
-                sectionPanel.repaint();
+                desplegado = !desplegado;
+                cursosPanel.setVisible(desplegado);
+                despliegueIcon.setIcon(new ImageIcon(desplegado ? "img/despliegue2.jpg" : "img/despliegue1.jpg"));
+                seccionPanel.revalidate();
+                seccionPanel.repaint();
             }
         });
 
-        return sectionPanel;
+        return seccionPanel;
     }
 
-    private void showCreateLPDialog() {
-        JDialog dialog = new JDialog(this, "Crear Nuevo Learning Path", true);
-        dialog.setSize(450, 500);
-        dialog.setLocationRelativeTo(this);
-        dialog.setLayout(new GridBagLayout());
-        dialog.getContentPane().setBackground(new Color(245, 235, 255));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // Title
-        JLabel titleLabel = new JLabel("Crear Nuevo Learning Path", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(100, 50, 150));
-        gbc.gridwidth = 2;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        dialog.add(titleLabel, gbc);
-
-        gbc.gridwidth = 1;
-        gbc.gridy++;
-        gbc.gridx = 0;
-        JLabel labelTitulo = new JLabel("Título:");
-        labelTitulo.setFont(new Font("Arial", Font.PLAIN, 14));
-        dialog.add(labelTitulo, gbc);
-
-        gbc.gridx = 1;
-        JTextField textTitulo = createStyledTextField();
-        dialog.add(textTitulo, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        JLabel labelDescripcion = new JLabel("Descripción:");
-        labelDescripcion.setFont(new Font("Arial", Font.PLAIN, 14));
-        dialog.add(labelDescripcion, gbc);
-
-        gbc.gridx = 1;
-        JTextField textDescripcion = createStyledTextField();
-        dialog.add(textDescripcion, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        JLabel labelObjetivos = new JLabel("Objetivos:");
-        labelObjetivos.setFont(new Font("Arial", Font.PLAIN, 14));
-        dialog.add(labelObjetivos, gbc);
-
-        gbc.gridx = 1;
-        JTextField textObjetivos = createStyledTextField();
-        dialog.add(textObjetivos, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        JLabel labelNivelDificultad = new JLabel("Nivel de Dificultad:");
-        labelNivelDificultad.setFont(new Font("Arial", Font.PLAIN, 14));
-        dialog.add(labelNivelDificultad, gbc);
-
-        gbc.gridx = 1;
-        JComboBox<String> comboNivelDificultad = new JComboBox<>(new String[]{"Bajo", "Medio", "Alto"});
-        comboNivelDificultad.setBackground(new Color(220, 200, 255));
-        comboNivelDificultad.setForeground(new Color(70, 30, 100));
-        comboNivelDificultad.setFont(new Font("Arial", Font.PLAIN, 14));
-        dialog.add(comboNivelDificultad, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        JLabel labelDuracion = new JLabel("Duración Estimada (min):");
-        labelDuracion.setFont(new Font("Arial", Font.PLAIN, 14));
-        dialog.add(labelDuracion, gbc);
-
-        gbc.gridx = 1;
-        JTextField textDuracion = createStyledTextField();
-        dialog.add(textDuracion, gbc);
-
-        // Buttons
-        gbc.gridy++;
-        gbc.gridx = 0;
-        JButton crearButton = createStyledButton("Crear");
-        dialog.add(crearButton, gbc);
-
-        gbc.gridx = 1;
-        JButton cancelarButton = createStyledButton("Cancelar");
-        dialog.add(cancelarButton, gbc);
-
-        crearButton.addActionListener(e -> {
-            try {
-                String titulo = textTitulo.getText().trim();
-                String descripcion = textDescripcion.getText().trim();
-                String objetivos = textObjetivos.getText().trim();
-                String nivelDificultad = (String) comboNivelDificultad.getSelectedItem();
-                int duracion = Integer.parseInt(textDuracion.getText().trim());
-
-                if (titulo.isEmpty() || descripcion.isEmpty() || objetivos.isEmpty() || duracion <= 0) {
-                    JOptionPane.showMessageDialog(dialog, "Todos los campos son obligatorios y la duración debe ser mayor a 0.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                LearningPath nuevoLP = profesor.crearLearningPath(titulo, descripcion, objetivos, nivelDificultad, duracion, persistencia);
-                persistencia.getMapaPaths().put(nuevoLP.getTitulo(), nuevoLP);
-
-                JOptionPane.showMessageDialog(dialog, "Learning Path creado exitosamente.");
-                dialog.dispose();
-                updateSections(); // Update the main window
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Duración debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        cancelarButton.addActionListener(e -> dialog.dispose());
-
-        dialog.setVisible(true);
-    }
-
-    private JTextField createStyledTextField() {
-        JTextField textField = new JTextField();
-        textField.setFont(new Font("Arial", Font.PLAIN, 14));
-        textField.setBackground(new Color(240, 230, 255));
-        textField.setForeground(new Color(80, 40, 120));
-        textField.setBorder(BorderFactory.createLineBorder(new Color(150, 100, 200)));
-        textField.setHorizontalAlignment(SwingConstants.CENTER);
-        return textField;
-    }
-
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBackground(new Color(150, 120, 250));
-        button.setOpaque(true);
-        return button;
-    }
-
-    private void showCourseOptions(LearningPath lp, boolean isCreator) {
+    private void mostrarOpcionesCurso(LearningPath lp, boolean esCreador) {
         JPopupMenu menu = new JPopupMenu();
-        if (isCreator) {
+        if (esCreador) {
             JMenuItem crearActividad = new JMenuItem("Crear Actividad");
-            crearActividad.addActionListener(e -> JOptionPane.showMessageDialog(this, "Crear actividad para el curso: " + lp.getTitulo()));
+            crearActividad.addActionListener(e -> crearActividadDesdeGUI(lp));
             menu.add(crearActividad);
 
-            JMenuItem modificarCurso = new JMenuItem("Modificar Curso");
-            modificarCurso.addActionListener(e -> JOptionPane.showMessageDialog(this, "Modificar curso: " + lp.getTitulo()));
-            menu.add(modificarCurso);
+            JMenuItem eliminarActividad = new JMenuItem("Eliminar Actividad");
+            eliminarActividad.addActionListener(e -> eliminarActividadDesdeGUI(lp));
+            menu.add(eliminarActividad);
         }
 
         JMenuItem verActividades = new JMenuItem("Ver Actividades");
-        verActividades.addActionListener(e -> JOptionPane.showMessageDialog(this, "Actividades del curso: " + lp.getTitulo()));
+        verActividades.addActionListener(e -> mostrarActividades(lp));
         menu.add(verActividades);
 
         menu.show(this, getWidth() / 2, getHeight() / 2);
+    }
+
+    private void abrirFormularioCrearLearningPath() {
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        panel.setBackground(new Color(235, 225, 255));
+
+        JLabel tituloLabel = new JLabel("Título:");
+        JLabel descripcionLabel = new JLabel("Descripción:");
+        JLabel objetivosLabel = new JLabel("Objetivos:");
+        JLabel nivelDificultadLabel = new JLabel("Nivel de Dificultad:");
+        JLabel duracionLabel = new JLabel("Duración Estimada (min):");
+
+        tituloLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        tituloLabel.setForeground(new Color(100, 100, 200));
+        descripcionLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        descripcionLabel.setForeground(new Color(100, 100, 200));
+        objetivosLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        objetivosLabel.setForeground(new Color(100, 100, 200));
+        nivelDificultadLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        nivelDificultadLabel.setForeground(new Color(100, 100, 200));
+        duracionLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        duracionLabel.setForeground(new Color(100, 100, 200));
+
+        JTextField tituloField = new JTextField();
+        JTextField descripcionField = new JTextField();
+        JTextField objetivosField = new JTextField();
+        String[] nivelesDificultad = {"Bajo", "Medio", "Alto"};
+        JComboBox<String> nivelDificultadComboBox = new JComboBox<>(nivelesDificultad);
+        JTextField duracionField = new JTextField();
+
+        estilizarCampoTexto(tituloField);
+        estilizarCampoTexto(descripcionField);
+        estilizarCampoTexto(objetivosField);
+        estilizarCampoTexto(duracionField);
+
+        panel.add(tituloLabel);
+        panel.add(tituloField);
+        panel.add(descripcionLabel);
+        panel.add(descripcionField);
+        panel.add(objetivosLabel);
+        panel.add(objetivosField);
+        panel.add(nivelDificultadLabel);
+        panel.add(nivelDificultadComboBox);
+        panel.add(duracionLabel);
+        panel.add(duracionField);
+
+        JButton okButton = new JButton("Crear");
+        JButton cancelButton = new JButton("Cancelar");
+        okButton.setBackground(new Color(150, 120, 255));
+        okButton.setForeground(Color.WHITE);
+        okButton.setFocusPainted(false);
+        cancelButton.setBackground(new Color(200, 200, 200));
+        cancelButton.setFocusPainted(false);
+
+        panel.add(okButton);
+        panel.add(cancelButton);
+
+        JOptionPane.showConfirmDialog(this, panel, "Crear Nuevo Learning Path", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private void estilizarCampoTexto(JTextField field) {
+        field.setBorder(BorderFactory.createLineBorder(new Color(150, 120, 255), 2));
+        field.setFont(new Font("Arial", Font.PLAIN, 14));
+        field.setForeground(new Color(50, 50, 150));
+        field.setHorizontalAlignment(SwingConstants.CENTER);
+    }
+
+
+    private void actualizarVentana() {
+        getContentPane().removeAll();
+        new VentanaProfesor(profesor, persistencia).setVisible(true);
+        dispose();
+    }
+
+    private void crearActividadDesdeGUI(LearningPath lp) {
+        JPanel panel = new JPanel(new GridLayout(8, 2, 10, 10));
+        panel.setBackground(new Color(245, 245, 255));
+
+        // Componentes de entrada
+        JTextField nombreField = new JTextField();
+        JTextField descripcionField = new JTextField();
+        JTextField objetivoField = new JTextField();
+        String[] nivelesDificultad = {"Bajo", "Medio", "Alto"};
+        JComboBox<String> nivelDificultadComboBox = new JComboBox<>(nivelesDificultad);
+        JTextField duracionField = new JTextField();
+        JCheckBox obligatorioCheckBox = new JCheckBox("¿Es obligatorio?");
+        obligatorioCheckBox.setBackground(new Color(245, 245, 255));
+        String[] tiposDeActividad = {"Recurso educativo", "Encuesta", "Tarea", "Quiz", "Examen"};
+        JComboBox<String> tipoActividadComboBox = new JComboBox<>(tiposDeActividad);
+
+        // Añadir componentes al panel
+        panel.add(new JLabel("Tipo de Actividad:"));
+        panel.add(tipoActividadComboBox);
+        panel.add(new JLabel("Nombre:"));
+        panel.add(nombreField);
+        panel.add(new JLabel("Descripción:"));
+        panel.add(descripcionField);
+        panel.add(new JLabel("Objetivo:"));
+        panel.add(objetivoField);
+        panel.add(new JLabel("Nivel de dificultad:"));
+        panel.add(nivelDificultadComboBox);
+        panel.add(new JLabel("Duración (min):"));
+        panel.add(duracionField);
+        panel.add(new JLabel(""));
+        panel.add(obligatorioCheckBox);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Crear Actividad", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                String tipoActividad = (String) tipoActividadComboBox.getSelectedItem();
+                String nombre = nombreField.getText().trim();
+                String descripcion = descripcionField.getText().trim();
+                String objetivo = objetivoField.getText().trim();
+                String nivelDificultad = (String) nivelDificultadComboBox.getSelectedItem();
+                int duracion = Integer.parseInt(duracionField.getText().trim());
+                boolean obligatorio = obligatorioCheckBox.isSelected();
+
+                Scanner fakeScanner = createFakeScanner(tipoActividad, nombre, descripcion, objetivo, nivelDificultad, duracion, obligatorio);
+                profesor.crearActividad(fakeScanner);
+
+                JOptionPane.showMessageDialog(this, "Actividad creada exitosamente.");
+                actualizarVentana();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al crear la actividad: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void eliminarActividadDesdeGUI(LearningPath lp) {
+        List<String> actividadesNombres = new ArrayList<>();
+        for (var actividad : lp.getActividades()) {
+            actividadesNombres.add(actividad.getNombre());
+        }
+
+        if (actividadesNombres.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay actividades en este Learning Path para eliminar.", "Información", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String actividadSeleccionada = (String) JOptionPane.showInputDialog(
+                this,
+                "Seleccione la actividad a eliminar:",
+                "Eliminar Actividad",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                actividadesNombres.toArray(),
+                actividadesNombres.get(0)
+        );
+
+        if (actividadSeleccionada != null) {
+            lp.getActividades().removeIf(actividad -> actividad.getNombre().equals(actividadSeleccionada));
+            JOptionPane.showMessageDialog(this, "Actividad eliminada exitosamente.");
+            actualizarVentana();
+        }
+    }
+
+    private void mostrarActividades(LearningPath lp) {
+        JPanel panel = new JPanel(new GridLayout(lp.getActividades().size(), 1, 10, 10));
+        panel.setBackground(new Color(245, 245, 255));
+
+        for (var actividad : lp.getActividades()) {
+            JLabel actividadLabel = new JLabel("• " + actividad.getNombre());
+            actividadLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+            actividadLabel.setForeground(new Color(100, 100, 200));
+            panel.add(actividadLabel);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Actividades en " + lp.getTitulo(), JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private Scanner createFakeScanner(String tipoActividad, String nombre, String descripcion, String objetivo, String nivelDificultad, int duracion, boolean obligatorio) {
+        String obligatorioTexto = obligatorio ? "si" : "no";
+        String inputSimulado = tipoActividad + "\n" + nombre + "\n" + descripcion + "\n" + objetivo + "\n" +
+                nivelDificultad + "\n" + duracion + "\n" + obligatorioTexto;
+        return new Scanner(inputSimulado);
     }
 }

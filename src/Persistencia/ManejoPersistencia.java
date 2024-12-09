@@ -730,7 +730,6 @@ public class ManejoPersistencia {
 	        return rta;
 	    }
 
-
 	    // Guardar los profesores
 	    public Map<String, Profesor> guardarProfesor() {
 	        String nombreCSV = "datos/datosUsuariosProfesores.csv";
@@ -756,7 +755,6 @@ public class ManejoPersistencia {
 
 	        return mapaProfesores;
 	    }
-
 
 	    // Cargar profesores desde el archivo CSV
 	    public Map<String, Profesor> cargarProfesores() {
