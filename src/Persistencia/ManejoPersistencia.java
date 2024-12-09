@@ -44,6 +44,16 @@ public class ManejoPersistencia {
 	private Map<String, ProgresoPath> mapaProgresoPath = new HashMap<>();
 	private Map<String, ProgresoActividad> mapaProgresoActividad = new HashMap<>();
 
+	//Funciones
+	public Boolean verificarEstudianteExistente(Estudiante usuario) {
+		Boolean rta = false; //por defecto se asume que no está
+		for (Estudiante usuar: mapaEstudiantes) {
+			if (usuar.equals(usuario)) {
+				rta = true;
+			}
+		}
+		return rta;
+	
 	
 	//SECCI0N PARA ACTIVIDADES
 	
