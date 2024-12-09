@@ -47,14 +47,27 @@ public class ManejoPersistencia {
 	//Funciones
 	public Boolean verificarEstudianteExistente(Estudiante usuario) {
 		Boolean rta = false; //por defecto se asume que no está
-		for (Estudiante usuar: mapaEstudiantes) {
-			if (usuar.equals(usuario)) {
+		for (String usuar: mapaEstudiantes.keySet()) {
+			Usuario usu = mapaEstudiantes.get(usuar);
+			if (usu.equals(usuario)) {
 				rta = true;
 			}
 		}
 		return rta;
-	
 	}
+
+	public Boolean verificarProfesorExistente(Profesor usuario) {
+		Boolean rta = false; //por defecto se asume que no está
+		for (String usuar: mapaProfesores.keySet()) {
+			Profesor usu = mapaProfesores.get(usuar);
+			if (usu.equals(usuario)) {
+				rta = true;
+			}
+		}
+		return rta;
+	}
+	
+
 	//SECCI0N PARA ACTIVIDADES
 	
 	
